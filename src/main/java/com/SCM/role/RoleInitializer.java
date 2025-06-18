@@ -16,16 +16,23 @@ public class RoleInitializer {
 
     @PostConstruct
     public void initializeRoles() {
-        List<Role.RoleType> roleTypes = Arrays.asList(Role.RoleType.values());
-        for (Role.RoleType roleType : roleTypes) {
-            Role role = new Role();
-            role.setName(roleType);
-            if (!roleRepository.existsByName(roleType)) {
-                roleRepository.save(role);
-                System.out.println("Role " + roleType.name() + " created.");
-            } else {
-                System.out.println("Role " + roleType.name() + " already exists.");
+        try {
+            List<Role.RoleType> roleTypes = Arrays.asList(Role.RoleType.values());
+            for (Role.RoleType roleType : roleTypes) {
+                if (!roleRepository.existsByName(roleType)) {
+                    Role role = new Role();
+                    role.setName(roleType);
+                    roleRepository.save(role);
+                    System.out.println("Role " + roleType.name() + " created.");
+                } else {
+                    System.out.println("Role " + roleType.name() + " already exists.");
+                }
             }
+        } catch (Exception e) {
+            System.err.println("🚨 Error initializing roles: " + e.getMessage());
+            e.printStackTrace();
         }
     }
+
+
 }
