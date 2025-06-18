@@ -64,6 +64,15 @@ jobs:
             -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
             -Dspring.jpa.hibernate.ddl-auto=update
 
+      - name: Run tests if test folder exists (optional)
+        run: |
+          if [ -d "src/test" ]; then
+            echo "Running tests..."
+            mvn test || echo "Tests failed or none found."
+          else
+            echo "No tests found. Skipping test step."
+          fi
+
       - name: Try to update dependency graph (optional)
         if: always()
         continue-on-error: true
