@@ -6,15 +6,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@TestConfiguration
-@ImportAutoConfiguration(exclude = RoleInitializer.class)
-class ScmApplicationTests {
+public class ScmApplicationTests {
+
+	@MockBean
+	private RoleInitializer roleInitializer;
+
 	@Test
-	@Disabled("Disabling temporarily for CI")
 	void contextLoads() {
 	}
 }
+
