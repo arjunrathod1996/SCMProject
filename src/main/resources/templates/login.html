@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <!-- Flowbite CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css">
+
+    <style>
+        .fade-out {
+            animation: fadeOut 2s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                display: none;
+            }
+        }
+        
+        /* Add this CSS to style the input field border in red when there's an error */
+.has-error input {
+    border-color: #ff0000; /* Red color */
+    /* You can also add additional styling such as border width or border style */
+}
+
+        
+    </style>
+</head>
+<body>
+
+<div th:replace="~{navbar :: navbar}"></div>
+
+<div>
+    <div id="content" style="margin-top: 130px;">
+        <div class="flex justify-center items-center h-screen">
+            <div class="max-w-screen-md p-6">
+
+                <!-- Error Alert -->
+                <div id="errorAlert" class="hidden flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800" role="alert">
+                    <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                    </svg>
+                    <span>Invalid username or password. Please check!</span>
+                </div>
+
+                <!-- Logout Alert -->
+                <div id="logoutAlert" class="hidden flex items-center p-4 mb-4 text-sm text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800" role="alert">
+                    <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                    </svg>
+                    <span>Successfully logged out!</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Email and Google Login Form -->
+                    <form class="max-w-md mb-8" method="post" id="loginWithEmailAndGoogleAccount" th:action="@{/token}">
+                        <!-- Username Input -->
+                        <div class="relative z-0 w-full mb-5 group">
+                            <input type="username" name="username" id="floating_email" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <label for="floating_email" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Email address</label>
+                        </div>
+                        <!-- Password Input -->
+                        <div class="relative z-0 w-full mb-5 group">
+                            <input type="password" name="password" id="floating_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <label for="floating_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Password</label>
+                        </div>
+                        <!-- Submit and Reset Buttons -->
+                        <div class="flex md:space-x-4 rtl:space-x-reverse mt-4 md:mt-0">
+                            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                            <button type="reset" class="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 ml-3">Reset</button>
+                        </div>
+                        <hr style="margin-top: 10px; margin-bottom: 10px;">
+                        <!-- Social Login Buttons -->
+                        <div class="flex justify-center">
+                            <button type="button" class="text-white bg-[#24292F] hover:bg-[#24292F]/90 focus:ring-4 focus:outline-none focus:ring-[#24292F]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 dark:hover:bg-[#050708]/30 me-2 mb-2">
+                                <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 .333A9.911 9.911 0 0 0 6.866 19.65c.5.092.678-.215.678-.477 0-.237-.01-1.017-.014-1.845-2.757.6-3.338-1.169-3.338-1.169a2.627 2.627 0 0 0-1.1-1.451c-.9-.615.07-.6.07-.6a2.084 2.084 0 0 1 1.518 1.021 2.11 2.11 0 0 0 2.884.823c.044-.503.268-.973.63-1.325-2.2-.25-4.516-1.1-4.516-4.9A3.832 3.832 0 0 1 4.7 7.068a3.56 3.56 0 0 1 .095-2.623s.832-.266 2.726 1.016a9.409 9.409 0 0 1 4.962 0c1.89-1.282 2.717-1.016 2.717-1.016.366.83.402 1.768.1 2.623a3.827 3.827 0 0 1 1.02 2.659c0 3.807-2.319 4.644-4.525 4.889a2.366 2.366 0 0 1 .673 1.834c0 1.326-.012 2.394-.012 2.72 0 .263.18.572.681.475A9.911 9.911 0 0 0 10 .333Z" clip-rule="evenodd"/>
+                                </svg>
+                                <a th:href="@{'/oauth2/authorization/github'}" class="inline-flex items-center">
+                                    Sign in with GitHub
+                                </a>
+                            </button>
+                            <button type="button" class="text-white bg-[#4285F4] hover:bg-[#4285F4]/90 focus:ring-4 focus:outline-none focus:ring-[#4285F4]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-[#4285F4]/55 me-2 mb-2">
+                                <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 19">
+                                    <path fill-rule="evenodd" d="M8.842 18.083a8.8 8.8 0 0 1-8.65-8.948 8.841 8.841 0 0 1 8.8-8.652h.153a8.464 8.464 0 0 1 5.7 2.257l-2.193 2.038A5.27 5.27 0 0 0 9.09 3.4a5.882 5.882 0 0 0-.2 11.76h.124a5.091 5.091 0 0 0 5.248-4.057L14.3 11H9V8h8.34c.066.543.095 1.09.088 1.636-.086 5.053-3.463 8.449-8.4 8.449l-.186-.002Z" clip-rule="evenodd"/>
+                                </svg>
+                                <a th:href="@{'/oauth2/authorization/google'}" class="inline-flex items-center">
+                                    Sign in with Google
+                                </a>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Mobile Number and OTP Login Form -->
+                    <form class="max-w-md mb-8 hidden" method="post" id="loginWithMobileAndOtp">
+                        <!-- Mobile Number Input -->
+                        <div class="relative z-0 w-full mb-5 group">
+                            <input type="text" name="mobileNumber" id="floating_mobile" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <label for="floating_mobile" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Mobile Number</label>
+                        </div>
+                        <!-- OTP Input -->
+                        <div class="relative z-0 w-full mb-5 group hidden" id="otpfield">
+                           <!-- <input type="text" 
+                            	name="otp" 
+                            	id="floating_otp" 
+                            	class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" 
+                            	placeholder=" " />-->
+                            	
+                             <input type="text" 
+                            	name="otp" 
+                            	id="floating_otp" 
+                            	inputmode="numeric"
+                            	is="web-otp"
+                            	autocomplete="one-time-code"
+                            	pattern="^([0-9]+)$"
+                            	class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" 
+                            	placeholder=" " />
+                            	
+                            <label for="floating_otp" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">OTP</label>
+                        </div>
+                        <!-- Submit and Reset Buttons -->
+                        <div class="flex ">
+                            <button id="sendButtonId" onclick="sendButton()" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Send</button>
+
+                            <button id="verifyButtonId" onclick="verifyButton()" type="button" class="hidden text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 ">Verify</button>
+                        </div>
+                    </form>
+
+                    <!-- Image -->
+                    <div class="max-w-md flex justify-center items-center">
+                        <img th:src="@{images/4.jpg}" alt="Home Image" class="grid rounded-lg" style="max-width: 100%; height: auto;">
+                    </div>
+                </div>
+
+                <!-- Switch Login Method Links -->
+                <div class="flex justify-center mt-4 space-x-4">
+                    <button id="switchToMobile" class="px-4 py-2 bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">Login with Mobile Number</button>
+                    <button id="switchToEmail" class="hidden px-4 py-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">Login with Email</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+		
+        $('#switchToMobile').click(function() {
+            $('#loginWithEmailAndGoogleAccount').hide();
+            $('#loginWithMobileAndOtp').show();
+            $('#switchToMobile').hide();
+            $('#switchToEmail').show();
+        });
+
+        $('#switchToEmail').click(function() {
+            $('#loginWithMobileAndOtp').hide();
+            $('#loginWithEmailAndGoogleAccount').show();
+            $('#switchToEmail').hide();
+            $('#switchToMobile').show();
+        });
+
+        setTimeout(function() {
+            $('#errorAlert').fadeOut();
+            $('#logoutAlert').fadeOut();
+        }, 3000); // Fade out after 3 seconds
+
+        function disableBack() { window.history.forward(); }
+        window.onload = disableBack();
+        window.onpageshow = function(evt) { if (evt.persisted) disableBack(); };
+        
+    });
+    
+    
+/*function sendButton() {
+    var mobileNumber = $('#floating_mobile').val();
+
+    // Remove any existing error class
+    $('#floating_mobile').closest('.group').removeClass('has-error');
+
+    // Check if the mobile number field is empty
+    if (!mobileNumber.trim()) {
+        // Add error class to the parent element of the input field
+        $('#floating_mobile').closest('.group').addClass('has-error');
+        return false; // Prevent form submission
+    }
+
+    // If mobile number is not empty, continue with sending process
+    $('#sendButtonId').hide();
+    $('#verifyButtonId').show();
+    $('#otpfield').show();
+    $('#floating_mobile').prop('disabled', true); // Disable mobile input field
+    $('#floating_otp').show().prop('required', true);
+    
+    // Construct the URL with the mobile number as a path parameter
+    var url = '/auth/generate-otp/' + mobileNumber;
+
+    $.ajax({
+        type: 'POST',
+        url: url,
+        timeout: 60000,
+        success: function(data, textStatus, jqXHR) {
+            console.log('Success:', data);
+            // Handle success response here
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log('Error:', textStatus);
+            // Handle error response here
+        }
+    });
+};*/ 
+
+
+function sendButton() {
+    var mobileNumber = $('#floating_mobile').val();
+
+    // Remove any existing error class
+    $('#floating_mobile').closest('.group').removeClass('has-error');
+
+    // Check if the mobile number field is empty
+    if (!mobileNumber.trim()) {
+        // Add error class to the parent element of the input field
+        $('#floating_mobile').closest('.group').addClass('has-error');
+        return false; // Prevent form submission
+    }
+
+    // If mobile number is not empty, continue with sending process
+    $('#sendButtonId').hide();
+    $('#verifyButtonId').show();
+    $('#otpfield').show();
+    $('#floating_mobile').prop('disabled', true); // Disable mobile input field
+    $('#floating_otp').show().prop('required', true);
+    
+    // Construct the URL with the mobile number as a path parameter
+    var url = '/auth/generate-otp/' + mobileNumber;
+
+    $.ajax({
+        type: 'POST',
+        url: url,
+        timeout: 60000,
+        success: function(data, textStatus, jqXHR) {
+            console.log('Success:', data);
+            detectOTP(data);
+            // Handle success response here
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log('Error:', textStatus);
+            // Handle error response here
+        }
+    });
+};
+
+function detectOTP(otp) {
+    // Get the OTP input field
+    const otpInput = document.getElementById('floating_otp');    
+    if (!otpInput) {
+        console.log('No OTP input field found.');
+        return;
+    }
+    // Extract only the digits from the OTP using regular expression
+    const extractedOTP = otp.match(/\d{4}/)[0];
+    // Fill the OTP input field with the extracted OTP
+    otpInput.value = extractedOTP;
+    console.log('OTP filled:', extractedOTP);
+}
+
+
+
+
+function verifyButton() {
+    var mobileNumber = $('#floating_mobile').val();
+    var otp = $('#floating_otp').val();
+
+    // Remove any existing error class
+    $('#floating_otp').closest('.group').removeClass('has-error');
+
+    // Check if the OTP field is empty
+    if (!otp.trim()) {
+        // Add error class to the parent element of the input field
+        $('#floating_otp').closest('.group').addClass('has-error');
+        return false; // Prevent form submission
+    }
+
+    // Construct the URL with the mobile number and OTP as path parameters
+    var url = '/auth/verify-otp/' + mobileNumber + '/' + otp;
+
+    $.ajax({
+        type: 'POST',
+        url: url,
+        timeout: 60000,
+        success: function(data, textStatus, jqXHR) {
+            console.log('Success:', data);
+            // Handle success response here
+            
+           
+            // Redirect the user to the dashboard or another page
+           window.location.href = '/my_app/access';
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log('Error:', textStatus);
+            // Handle error response here
+            alert('Incorrect OTP. Please try again.');
+        }
+    });
+  }
+
+    
+</script>
+</body>
+</html>

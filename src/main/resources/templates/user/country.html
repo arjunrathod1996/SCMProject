@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org" th:fragment="parent(content,title,script)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport meta tag -->
+
+<head>
+    <title data-th-text="${user.getEmail()}">Profile Page</title>
+
+    <!-- Bootstrap Datepicker CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
+    <!-- DataTables Bootstrap 4 Integration CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
+
+    <!-- DataTables Select CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+    
+    <!-- Common CSS -->
+   <link rel="stylesheet" th:href="@{/css/common.css}">
+   <!-- Font Awesome -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+    <link rel="stylesheet" th:href="@{/css/sidebar.scss}">
+    <link rel="stylesheet" th:href="@{/css/min.css}">
+    <link rel="stylesheet" th:href="@{/css/admin2.css}">
+
+</head>
+
+<body>
+
+    <div th:replace="~{user/user_sidebar :: user_sidebar}" ></div>
+
+   <div id="responsiveContainerAlert" >
+        <div  id="status_alert_content"  class="alert hidden alert-warning container text-center"  role="alert">
+           
+        </div>
+   </div>
+      
+    <!-- <div id="content"> -->
+        <div  class="container small_screen" id="responsiveContainer" >
+            <!-- Page Heading -->
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800 text-primary">Country</h1>
+            </div>
+            <!-- ./Page Heading -->
+            <!-- Horizonatal Line -->
+            <hr class="mt-0 mb-4">
+            <!-- ./Horizonatal Line -->
+            <!-- Search Data -->                
+            <div class="d-flex flex-wrap align-items-center mb-4 small">
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                    <div id="date_picker_start" class="input-group date">
+                        <input id="start_date" class="form-control input-sm" type="text"
+                            placeholder="Start Date"
+                            th:value="${param.startDate != null} ? ${param.startDate[0]}"
+                            style="font-size: 12px;" />
+                        <span class="input-group-addon">
+                            <span class="fa fa-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                    <div id="date_picker_end" class="input-group date">
+                        <input id="end_date" class="form-control input-sm" type="text"
+                            placeholder="End Date"
+                            th:value="${param.endDate != null} ? ${param.endDate[0]}"
+                            style="font-size: 12px;" />
+                        <span class="input-group-addon">
+                            <span class="fa fa-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                    <input id="nmae" class="form-control input-sm" type="text" placeholder="Name"
+                        th:value="${param.name != null} ? ${param.name[0]}" style="font-size: 12px" />
+                </div>
+                <div class="form-group mb-2" style="margin-left: 5px; padding: 0;">
+                    <button type="button" class="btn btn-default btn-sm square-border-radius" onclick="filter()">
+                        <i class="fa fa-search" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- ./Search Data -->
+            <!-- Buttons -->
+            <div class="d-sm-flex align-items-center justify-content-end mb-4 small">
+                <div class="btn-group btn-group-sm">
+                    <button data-toggle="modal" onclick="showCreateForm()" class="btn btn-default btn-sm" title="Create Raffle Pot" style="border: 1px solid #ccc; border-radius: 5px;">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                   <!-- <button data-toggle="modal" onclick="showEditForm()" class="btn btn-default btn-sm ml-2" title="Edit Raffle Pot" style="border: 1px solid #ccc; border-radius: 5px;">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    <button data-toggle="modal" onclick="deleteData()" class="btn btn-default btn-sm ml-2" title="Edit Raffle Pot" style="border: 1px solid #ccc; border-radius: 5px;">
+                        <i class="fa fa-trash"></i>
+                    </button>-->
+                </div>
+            </div>
+            <!-- ./Buttons -->
+            <!-- Table -->
+            <div class=" d-flex flex-wrap align-items-center mb-4 small">
+                <!-- Card Header - Dropdown -->
+                <div class="card-header py-2 d-flex " style="margin-bottom: 10px;">
+                    <h6 class="m-0 font-weight-bold text-primary">Country Table</h6>
+                </div>
+                <!-- Card Body -->
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table id="countryTable" class="table table-striped table-hover small" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Calling Code</th>
+                                <th>Name</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>   
+            </div>
+            <!-- Modal -->
+            <div id="countryModal" class="modal fade "  tabindex="-1" role="dialog" aria-labelledby="countryModalLabel" aria-hidden="true" style="margin-top: 70px;">
+                <div class="modal-dialog" role="document" style="max-width: 500px;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="countryModalLabel"><span id="header_modal">Create </span> Country</h5>
+                            <button onclick="closeModal()" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="country_form">
+                                <div class="row">
+                                    <div class="col-lg-6" >
+                                        <div class="form-group">
+                                            <label class="control-label">Calling Code</label>
+                                            <input type="text" id="callingCode" class="form-control input-sm" name="callingCode">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="control-label">Country Name</label>
+                                            <input type="text" id="name" class="form-control input-sm" name="name">
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--./row-->
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="form-group text-right">
+                                            <button type="button" class="btn btn-sm btn-default" onclick="closeModal()">Close</button>&nbsp;
+                                            <button id="btn_submit" type="button" class="btn btn-sm btn-primary" onClick="save()">Save</button>
+                                        </div>	
+                                        <div id="message_status" class="alert alert-info text-center hidden"></div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!-- Bootstrap JS (Optional) Important !!!--> 
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTables Bootstrap 4 Integration JS -->
+<!-- <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js"></script> -->
+
+<!-- DataTables Select JS -->
+<script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.standalone.min.css" integrity="sha512-D5/oUZrMTZE/y4ldsD6UOeuPR4lwjLnfNMWkjC0pffPTCVlqzcHTNvkn3dhL7C0gYifHQJAIrRTASbMvLmpEug==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css" integrity="sha512-34s5cpvaNG3BknEWSuOncX28vz97bRI59UnVtEEpFX536A7BtZSJHsDyFoCl8S7Dt2TPzcrCEoHBGeM4SUBDBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.min.css" integrity="sha512-aQb0/doxDGrw/OC7drNaJQkIKFu6eSWnVMAwPN64p6sZKeJ4QCDYL42Rumw2ZtL8DB9f66q4CnLIUnAw28dEbg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.standalone.min.css" integrity="sha512-t+00JqxGbnKSfg/4We7ulJjd3fGJWsleNNBSXRk9/3417ojFqSmkBfAJ/3+zpTFfGNZyKxPVGwWvaRuGdtpEEA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Your custom scripts -->
+<script src="/js/script.js"></script> 
+<script src="/js/side.js"></script>
+<script src="/js/admin2.js"></script>
+<script src="/js/admin2_min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+
+<script type="text/javascript">
+
+$(document).ready(function () {
+	setupCountryTable();  
+	setupDatePicker()
+});
+
+function setupCountryTable() {
+        var url = '/api/location/countryPageWise';
+        var parm = undefined;
+        if (location.href.indexOf('?') > 0) {
+            parm = location.href.substring(location.href.indexOf('?'), location.href.length);
+            url += parm;
+        }
+
+        var name = "countryTable";
+        var columns = setUpColumns();
+        var columnDefs = [{
+                orderable: false,
+                className: 'select-checkbox',
+                targets: 0,
+            },
+            {
+                orderable: true,
+                targets: [0],
+                orderSequence: ["desc", "asc",]
+            }
+        ];
+
+        var select = {
+            style: 'single',
+            selector: 'td:first-child'
+        };
+
+        tableInit(name, columns, [0, "desc"], columnDefs, select, url);
+    }
+
+function setUpColumns() {
+    var columns = [
+        { data: "id", defaultContent: "","render": function (data, type, row) {
+             return "<input class = 'hidden' class='dt-checkboxes' value = " + data + ">";
+         } },  // Placeholder for checkbox column
+        { 
+            data: "callingCode", 
+            render: function(data, type, row) {
+                return data ? data : '';
+            } 
+        },
+        { 
+            data: "name", 
+            render: function(data, type, row) {
+                return data ? data : '';
+            } 
+        },
+        { 
+            data: "creationTime", 
+            render: function(data, type, row) {
+                return data ? data : '';
+            } 
+        }
+    ];
+    return columns;
+}
+
+function showCreateForm(){
+	$('#countryModal').modal('show');
+};
+
+function save() {
+    $('#name').closest('.form-group').removeClass('has-error');
+    $('#callingCode').closest('.form-group').removeClass('has-error');
+    
+    if (!$('#callingCode').val()) {
+        $('#callingCode').closest('.form-group').addClass('has-error');
+        return false;
+    }
+    
+     if (!$('#name').val()) {
+        $('#name').closest('.form-group').addClass('has-error');
+        return false;
+    }
+    
+    statusAlertWidget('#message_status', 'alert-progress', null);
+    
+    var row = readTableData('#countryTable');
+    
+    var id = row[0];
+    var url = '/api/location/country';
+    var parms = '';
+    
+    if (id) {
+        parms = '?id=' + id; // Correct query parameter formatting
+    }
+    
+    url += parms;
+    
+    console.log('url : ' + url);
+    
+    var countryData = {
+        'name'          : $('#name').val(),
+        'callingCode'   : $('#callingCode').val(),
+    };
+    
+    console.log('data', JSON.stringify(countryData));
+    
+    $.ajax({
+        headers : {
+            'Content-Type' : 'application/json'
+        },
+        data    : JSON.stringify(countryData),
+        timeout : 60000,
+        type    : 'POST',
+        url     : url,
+        beforeSend : function() {
+            com_disableClick('btn_submit');
+        },
+    }).done(function(data, textStatus, jqXHR) {
+        statusAlertWidget('#message_status', 'alert alert-success', 'Successfully Submitted...');
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        if (jqXHR && jqXHR.responseText) {
+            statusAlertWidget('#message_status', 'alert alert-danger', 'Failed : ' + jqXHR.responseText);
+        } else {
+            statusAlertWidget('#message_status', 'alert alert-danger', 'Failed to Save');
+        }
+    });
+}
+
+
+function showEditForm(){
+			
+    statusAlert(null,null);
+    
+    var row = readTableData('#countryTable');
+    
+    if(row.length == 0){
+        statusAlert('alert-danger','No Business Selected');
+        return;
+    }
+    
+    initModal(row[0]);
+}
+
+function initModal(id) {
+    statusAlert('alert-progress', 'Please wait....');
+    
+    var url = "/api/business?id=" + id;
+    
+    console.log('url..........', url);
+    
+    $.get(url, function(data) {
+        statusAlert(null, null);
+       
+        $('#countryModal').modal('show');
+        // Populate modal fields with data
+        $('#name').val(data.name);
+        $('#fullName').val(data.fullName);
+        $('#address').val(data.address);
+        $('#description').val(data.description);
+    }).fail(function(error) {
+        statusAlert('alert-danger', 'Failed to read Business');
+    });
+}
+
+function deleteData(){
+	
+	statusAlert('alert-progress',null);
+	var row = readTableData('#countryTable');
+	if(row.length == 0){
+		statusAlert('alert-danger','No Business Selected');
+		return;
+	}
+	$.get('/api/business/delete?id=' + row[0],
+		function(data){
+			statusAlert(null,null);
+			location.reload();
+		}).fail(function(){
+			statusAlert('alert-danger','Failed to deleted');
+		});
+}
+
+function setupDatePicker(){
+    var datePickerOptions = {
+        format: 'yyyy-mm-dd',
+        autoclose: true
+    };
+    $('#date_picker_start').datepicker(datePickerOptions);
+    $('#date_picker_end').datepicker(datePickerOptions);
+}
+
+function filter(){
+	params = "";
+	var url = '/user/dashboard/business';
+	var filterFields = [
+		['#start_date','startDate'],['#end_date','endDate'],
+		['#name','name'],
+		['#address','address'],
+	    ]
+	com_invokeUrlWithParms(url,filterFields,'countryTable');
+}
+
+function closeModal() {
+    location.reload();
+}
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org" th:fragment="parent(content,title,script)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport meta tag -->
+
+<head>
+    <title data-th-text="${user.getEmail()}">Profile Page</title>
+ 
+
+    <!-- Bootstrap Datepicker CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    
+    
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
+    <!-- DataTables Bootstrap 4 Integration CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
+    
+
+    <!-- DataTables Select CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+    
+    <!-- Common CSS -->
+   <link rel="stylesheet" th:href="@{/css/common.css}">
+   <!-- Font Awesome -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+    <link rel="stylesheet" th:href="@{/css/sidebar.scss}">
+    <link rel="stylesheet" th:href="@{/css/min.css}">
+    <link rel="stylesheet" th:href="@{/css/admin2.css}">
+    
+    <!-- Bootstrap CSS Working dont remove -->
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" 
+    		integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">-->
+    		
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.17/dist/css/bootstrap-select.min.css">
+    
+	 <!-- Bootstrap Select Picker CSS -->
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/css/bootstrap-select.min.css" rel="stylesheet">
+	
+	<style>
+		.hidden {
+			display: none;
+		}
+		
+		.button-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px; /* Space between buttons */
+    align-items: center;
+}
+
+.button-container a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    border-radius: 3px;
+    text-decoration: none;
+}
+
+.important-lead {
+    color: orange;
+    margin-left: 5px;
+    display: flex;
+    align-items: center;
+}
+
+/* Optional: Additional styling for buttons */
+.contact-button {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+}
+
+.contact-button:hover, .contact-button:focus {
+    background-color: #e5e5e5;
+    border-color: #ccc;
+}
+
+.btn-xs {
+    font-size: 12px;
+    padding: 5px 10px;
+    margin: 2px 0;
+}
+
+/* Custom styles for the lead name link */
+.lead-name-link {
+    font-weight: bold;
+    text-decoration: none;
+    color: #007bff;
+}
+
+.lead-name-link:hover {
+    text-decoration: underline;
+}
+
+/* Custom styles for status and priority badges */
+.status-badge {
+    margin-top: 5px;
+    display: inline-block;
+}
+
+.priority-badge {
+    margin-left: 5px;
+    display: inline-block;
+}
+
+/* Optional: Custom styles for different statuses */
+.badge-secondary {
+    background-color: #6c757d;
+}
+
+.badge-primary {
+    background-color: #007bff;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+}
+
+.badge-success {
+    background-color: #28a745;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+}
+
+.badge-info {
+    background-color: #17a2b8;
+}
+
+.badge-light {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+.contact-button:hover{
+	background-color: #28a745;
+}
+
+	</style>
+	
+</head>
+
+<body>
+
+    <div th:replace="~{user/user_sidebar :: user_sidebar}" ></div>
+
+   <div id="responsiveContainerAlert" >
+        <div  id="status_alert_content"  class="alert hidden alert-warning container text-center"  role="alert">
+        </div>
+   </div>
+      
+    <!-- <div id="content"> -->
+        <div  class="container small_screen" id="responsiveContainer" >
+            <!-- Page Heading -->
+            <div class="d-sm-flex align-items-center justify-content-between mb-4" >
+                <h1 class="h3 mb-0 text-gray-800 text-primary">Leads</h1>
+            </div>
+            <!-- ./Page Heading -->
+            <!-- Horizonatal Line -->
+            <hr class="mt-0 mb-4">
+            <!-- ./Horizonatal Line -->
+            <!-- Search Data -->                
+            <div class="d-flex flex-wrap align-items-center mb-4 small" >
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                    <div id="date_picker_start" class="input-group date">
+                        <input id="start_date" class="form-control input-sm" type="text"
+                            placeholder="Start Date"
+                            th:value="${param.startDate != null} ? ${param.startDate[0]}"
+                            style="font-size: 12px;" />
+                        <span class="input-group-addon">
+                            <span class="fa fa-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                    <div id="date_picker_end" class="input-group date">
+                        <input id="end_date" class="form-control input-sm" type="text"
+                            placeholder="End Date"
+                            th:value="${param.endDate != null} ? ${param.endDate[0]}"
+                            style="font-size: 12px;" />
+                        <span class="input-group-addon">
+                            <span class="fa fa-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                    <input id="leadID" class="form-control input-sm " type="text" placeholder="lead ID"
+						th:value="${param.leadID != null} ? ${param.leadID[0]}" style="font-size: 12px" />
+                </div>
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                   <input id="leadName" class="form-control input-sm " type="text" placeholder="lead Name"
+					 th:value="${param.leadName != null} ? ${param.leadName[0]}" style="font-size: 12px" />
+                </div>
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                   <select class="form-control input-sm" id = "filter_status" style="height: 33px;">
+						<option value="">Status : All</option>
+						<option th:each="status : ${T(com.SCM.leads.LeadMain.Status).values()}" 
+							th:text = "${status.getTag()}"
+							th:value = "${status}"
+							th:selected="${param.status != null} ? ${status.name().equals(param.status[0])}">
+						</option>
+					</select>
+                </div>
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                  <select class="form-control input-sm" id = "filter_priority" style="height: 33px;">
+						<option value="">Priority : All</option>
+						<option th:each="priority : ${T(com.SCM.leads.LeadMain.Priority).values()}" 
+							th:text = "${priority.getTag()}"
+							th:value = "${priority}"
+							th:selected="${param.priority != null} ? ${priority.name().equals(param.priority[0])}">
+						</option>
+					</select>
+                </div>
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                   <input id="filter_important" type="checkbox"
+						th:checked="${param.important != null} ? ${param.important[0]}"> Important
+                </div>
+                <div class="form-group mb-2" style="margin-left: 5px; padding: 0;">
+                    <button type="button" class="btn btn-default btn-sm square-border-radius" onclick="filter()">
+                        <i class="fa fa-search" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- ./Search Data -->
+            <!-- Buttons -->
+            <div class="d-sm-flex align-items-center justify-content-end mb-4 small">
+                <div class="btn-group btn-group-sm">
+                    <button data-toggle="modal" onclick="showCreateForm()" class="btn btn-default btn-sm" title="Create Leads" style="border: 1px solid #ccc; border-radius: 5px;">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                    <button data-toggle="modal" onclick="showEditForm()" class="btn btn-default btn-sm ml-2" title="Edit Leads" style="border: 1px solid #ccc; border-radius: 5px;">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    <button data-toggle="modal" onclick="deleteData()" class="btn btn-default btn-sm ml-2" title="Delete Leads" style="border: 1px solid #ccc; border-radius: 5px;">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                    <button sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN')" data-toggle="modal" onclick="showAssignForm()" class="btn btn-default btn-sm ml-2" title="Assign Leads" style="border: 1px solid #ccc; border-radius: 5px;">
+					  <i class="fa fa-upload"></i>
+					</button>
+                </div>
+            </div>
+            <!-- ./Buttons -->
+            <!-- Table -->
+            <div class=" d-flex flex-wrap align-items-center mb-4 small">
+                <!-- Card Header - Dropdown -->
+                <div class="card-header py-2 d-flex " style="margin-bottom: 10px;">
+                    <h6 class="m-0 font-weight-bold text-primary">Leads Table</h6>
+                </div>
+                <!-- Card Body -->
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table id="leadsTable" class="table table-striped table-hover small" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Comment</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>   
+            </div>
+            <!-- Modal -->
+            <div id="leadCreateModal" class="modal fade "  tabindex="-1" role="dialog" aria-labelledby="leadCreateModalLabel" aria-hidden="true" style="margin-top: 70px;">
+                <div class="modal-dialog" role="document" style="max-width: 500px;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="leadCreateModalLabel"><span id="header_modal">Create </span> Leads</h5>
+                            <input type="hidden" id="lead_main_id">
+                            <button onclick="closeModal()" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="business_form">
+                                <div class="row">
+                                    <div class="col-lg-6" >
+                                        <div class="form-group">
+                                            <label class="control-label">Name</label>
+											<input id="lead_name" type="text" class="form-control input-sm" autocomplete="off" maxlength="45">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                           <label>Location</label>
+										   <input id="lead_location" type="text" class="form-control input-sm" autocomplete="off" maxlength="4">		
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+								<div class="col-lg-6">
+									<div class="form-group">
+										<label class="control-label">Source</label>
+										<select id="source" class="form-control input-sm"
+											title="Select Source"
+											data-size="6"
+											data-dropup-auto="false"
+											data-live-search="true">
+											<option value=""></option>
+											<option th:each="sources : ${leadSources}" th:text="${sources}" th:value="${sources}"></option>
+										</select>
+									</div>
+								</div>
+								<div class="col-lg-6" id="count_of_code_id">
+									<div class="form-group">
+										<label class="control-label">Category</label>
+										<select id="lead_category" class="form-control input-sm"
+											title="Select Category"
+											data-size="6"
+											data-dropup-auto="false"
+											data-live-search="true">
+											<option value=""></option>
+											<option th:each="category : ${categories}" th:text="${category}" th:value="${category}"></option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-lg-6">
+									<div class="form-group">
+										<label class="control-label">Priority</label>
+										<select id="priority" class="form-control input-sm" title="Select Priority">
+											<option th:each="priority : ${T(com.SCM.leads.LeadMain.Priority).values()}"
+												th:text = "${priority.getTag()}" th:value = "${priority}">
+											</option>
+										</select>
+									</div>
+								</div>
+								<div class="col-lg-6" id="count_of_code_id">
+									<div class="form-group">
+										<input id="important" type="checkbox" > Important Lead
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-lg-12">
+									<div class="form-group">
+										<label class="control-label">Description</label>
+										<textarea class="form-control input-sm" rows="1" cols="40" id="lead_aboutus" placeholder="Brief details"></textarea>
+									</div>
+								</div>
+							</div>
+							<div class="row hidden" id="follow-up-input-row">
+								<div class="col-lg-6">
+									<div class="form-group">
+										<label class="control-label">Status</label>
+										<select id="status" class="form-control input-sm" title="Select Status">
+											<option th:each="status : ${T(com.SCM.leads.LeadMain.Status).values()}"
+												th:text = "${status.getTag()}" th:value = "${status}">
+											</option>
+										</select>
+									</div>
+								</div>
+								<div class="col-lg-6">
+									<div class="form-group">
+										<label class="control-label">Next Follow-up</label>
+										<div id="next_followup_datepicker" class = "input-group date">
+											<input id="next_follow_up" name="next_follow_up"
+											type="date" placeholder="YYYY-MM-DD"
+											class="form-control input-sm">
+											<span class="input-group-addon" style="height: 38px;">
+												<span  class="fa fa-calendar glyphicon glyphicon-calendar"></span>
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row hidden" id="lead_comment_section">
+								<div class="col-lg-12">
+									<div class="form-group">
+										<label class="control-label">Comment</label>
+										<textarea class="form-control input-sm" rows="1" cols="40" id="lead_comment" placeholder="Brief details"></textarea>
+									</div>
+								</div>
+							</div>
+                            <!--./row-->
+                            <div class="row mb-5" >
+                                <div class="col-lg-12">
+                                    <div class="form-group text-right">
+                                        <button type="button" class="btn btn-sm btn-default" onclick="closeModal()">Close</button>&nbsp;
+                                        <button id="btn_submit" type="button" class="btn btn-sm btn-primary" onClick="save()">Save</button>
+                                    </div>	
+                                    <div id="message_status" class="alert alert-info text-center hidden"></div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+         <div id="leadAssignModal" class="modal fade "  tabindex="-1" role="dialog" aria-labelledby="leadAssignModalModalLabel" aria-hidden="true" style="margin-top: 70px;">
+                <div class="modal-dialog" role="document" style="max-width: 500px;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="leadAssignModalLabel"><span id="header_modal">Assign Leads</span></h5>
+                            <button onclick="closeModal()" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="business_form">
+                                <div class="row">
+                                    <div class="col-lg-12">
+										<label class="control-label">Assign To</label>
+										<select id="assign_user" class="form-control">
+											<option value=""></option>
+											<option th:each = "user : ${users}"
+												th:text = "${(user.getEmail())} + ${' / ' + user.getMerchant().getLocality()}"
+												th:value = "${user.getId()}">
+											</option>
+										</select> 
+										<small class="help-block">Select user to assign lead</small>
+									</div>
+                                </div>
+                                <div class="row">
+									<div class="col-lg-12">
+										<label class="control-label">Message</label>
+										<textarea class="form-control input-sm" rows="1" cols="40" id="assign_msg" placeholder="Any update/ note?"></textarea>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-lg-6">
+										<div class="form-group">
+											<label class="control-label">Priority</label>
+											<select id="priority" class="form-control input-sm" title="Select Priority">
+												<option th:each="priority : ${T(com.SCM.leads.LeadMain.Priority).values()}"
+													th:text = "${priority.getTag()}" th:value = "${priority}">
+												</option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="row mb-4" >
+									<div class="col-lg-12" style="margin-bottom: 30px;">
+										<div class="form-group text-right">
+											<button type="button" class="btn btn-sm btn-default" data-dismiss="modal" onclick="closeLeads()">Close</button>&nbsp;
+											<button id="btn_submit" type="button" class="btn btn-sm btn-primary" onClick="assign()">Submit</button>
+										</div>	
+										<div id="message_status_assign" class="alert alert-info text-center hidden" ></div>
+									</div>
+								</div>
+	                            <!--./row-->
+	                            
+	                        </form>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	
+	
+	
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!-- Popper.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+
+<!-- Bootstrap Bundle JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
+
+<!-- Bootstrap Select Picker JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/js/bootstrap-select.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTables Select JS -->
+<script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+
+<!-- Bootstrap Datepicker CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css">
+
+<!-- Bootstrap Datepicker JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Your custom scripts -->
+<script src="/js/script.js"></script> 
+<script src="/js/side.js"></script>
+<script src="/js/admin2.js"></script>
+<script src="/js/admin2_min.js"></script>
+
+
+
+
+
+<script type="text/javascript">
+
+$(document).ready(function () {
+			
+	// Call the function to initialize your selectpicker
+    initSelectPicker();
+    
+	
+	setupLeadsTable();
+	setupDatePickerFilter();
+	setupDatePicker();
+	
+	
+});
+
+function initSelectPicker() {
+    // Initialize your selectpicker
+    $('#lead_category').selectpicker();
+	$('#source').selectpicker();
+	setSelectListener();
+    
+    // Set any other event listeners or configurations here
+    // Example: setSelectListener();
+    // Example: setupDatePicker();
+    // Example: setupLeadsTable();
+    // Example: setupDatePickerFilter();
+}
+
+function setupDatePicker(){
+	
+	var datePickerOptions = {
+        format: 'yyyy-mm-dd',
+        autoclose: true
+    };
+	
+	$('#next_followup_datepicker').datetimepicker(datePickerOptions);
+	
+	var datePickerOptions = {
+        format: 'yyyy-mm-dd',
+        autoclose: true
+    };
+	
+	$('#filter_next_followup_datepicker').datetimepicker(datePickerOptions);
+}
+
+function showAssignForm(){
+			
+	statusAlert(null,null);
+	
+	var row = readTableData('#leadsTable');
+	
+	if(row.length == 0){
+		statusAlert('alert-danger','No Lead Selected');
+		return;
+	}
+	
+	initAssignModal(row[0]);
+}
+
+function initAssignModal(leadId){
+	statusAlert('alert-progress','Please wait....');
+	
+	var url = "/api/leads?id=" + leadId;
+	
+	console.log('url..........',url);
+	
+	$.get(url,function(data){
+		statusAlert(null,null);
+		$('#assign_user').val('');
+		if(data.assignedTo)
+			$('#assign_user').val(data.assignedTo.id);
+		
+		$('#assign_lead_id').removeClass('hidden');
+		$('#assign_lead_id').html('(' + data.leadID +')')
+		$('#leadAssignModal').modal('show');
+		leadID = data.id;
+	}).fail(function(error){
+		statusAlert('alert-danger','Failed to read Lead');
+	});
+}
+
+function assign(){
+	
+	console.log(">>>>>>>>>>>>>> : ");
+	var row = readTableData('#leadsTable');
+	leadID = row[0];
+	
+	if(!leadID){
+		var row = readTableData('#leadsTable');
+		
+		if(row.length == 0){
+			statusAlert('alert-danger','No Lead Selected');
+		}
+	}
+	
+	var assigneeID = $("#assign_user").val(); // Assuming you have a dropdown or input field for selecting the assignee
+    var message = $("#assign_msg").val(); // Assuming you have an input field for the message
+
+	
+	assignLead(leadID, assigneeID, message);
+}
+
+function assignLead(leadID, assigneeID, message) {
+	statusAlert('alert-progress','Please wait....');
+    $.ajax({
+        url: '/api/leads/assign',
+        type: 'GET',
+        data: {
+            id: leadID,
+            assigneeId: assigneeID,
+            message: message
+        },
+        success: function (response) {
+            console.log("Lead assigned successfully: ", response);
+            statusAlertWidget('#message_status_assign', 'alert alert-success', 'Successfully Submitted...');
+            // Optionally refresh the table or update the UI to reflect the changes
+        },
+        error: function (xhr, status, error) {
+            console.log("Error occurred while assigning lead: ", error);
+            statusAlertWidget('#message_status_assign', 'alert alert-success', error);
+        }
+    });
+}
+
+function showCreateForm(){
+	$('#lead_header_id').html('');
+	$('#modal_header_id').html('Create');
+	$('#follow-up-input-row').addClass('hidden');
+	$('#lead_comment_section').addClass('hidden');
+	$('#leadCreateModal').modal('show');
+}
+
+function showEditForm(id){
+			
+	if(!id){
+		var row = readTableData('#leadsTable');
+		
+		if(row.length == 0){
+		statusAlert('alert-danger','No Lead Selected');
+		}
+		
+		id = row[0];
+	}
+	
+	getLead(id);
+}
+
+function getLead(id){
+			
+	var url = "/api/leads?id=" + id;
+	$.get(url,function(data){
+		statusAlert(null,null);
+		initEditModal(data);
+	}).fail(function(error){
+		statusAlert('alert-danger','Failed to read Lead');
+	})
+}
+
+function initEditModal(data) {
+	    if (!data) {
+	        return;
+	    }
+	
+	    console.log('data', data);
+	
+	    $('#lead_comment_section').removeClass('hidden');
+	    $('#lead_main_id').val(data.id);
+	    $('#modal_header_id').html('Edit');
+	    $('#lead_headr_id').html('(' + data.leadID + ')');
+	    $('#follow-up-input-row').removeClass('hidden');
+	    $('#lead_name').val(data.name);
+	    $('#lead_primary_contact').val(data.primaryContact);
+	    $('#lead_comment').val(data.comment);
+	    $('#priority').val(data.priority);
+	    $('#status').val(data.status);
+	    $('#important').prop('checked', data['important']);
+	    $('#source').val(data.source);
+	
+	
+		console.log("source",data.source);
+
+    if (data.nextFollowUpTime) {
+        $('#next_follow_up').val(data.nextFollowUpTime);
+    }
+
+    if (data.leadMainExtras) {
+        var extras = data.leadMainExtras;
+        $('#lead_aboutus').val(extras.aboutUs);
+        $('#lead_location').val(extras.address);
+    }
+
+    if (data.category) {
+        $('#lead_category').selectpicker('val', data.category);
+    }
+    
+     if (data.source) {
+        $('#source').selectpicker('val', data.source);
+    }
+
+    $('#leadCreateModal').modal('show');
+}
+
+function save(){
+			
+	var data = readLeadData();
+	
+	if(!data)
+		return;
+		
+	var url = '/api/leads';
+	
+	
+	if($('#lead_main_id').val())
+		url += '?id=' + $('#lead_main_id').val();
+		
+	console.log('Lead url : ' + url);
+	
+	statusAlertWidget('#message_status', 'alert-progress', null);
+	
+	console.log('data',JSON.stringify(data));
+	
+	$.ajax({
+		headers : {
+			'Content-Type' : 'application/json'
+		},
+		data    : JSON.stringify(data),
+		timeout : 60000,
+		type    : 'POST',
+		url     : url,
+		beforeSend : function(){
+			com_disableClick('btn_submit');
+		},
+	}).done(function(data,textStatus,jqXHR){
+		statusAlertWidget('#message_status', 'alert alert-success', 'Successfully Submitted...');
+	}).fail(function(jqXHR,textStatus,errorThrown){
+		statusAlertWidget('#message_status', 'alert alert-danger', 'Failed to Submit...');
+	})
+	
+}
+
+function readLeadData(){
+	var name = $('#lead_name').val();
+	var comment = $('#lead_comment').val();
+	var aboutUs = $('#lead_location').val();
+	var address = $('#lead_location').val();
+	var category = $('#lead_category').val();
+	var source = $('#source').val();
+	
+	$('#lead_name').closest('.form-group').removeClass('has-error');
+	
+	if(!$('#lead_name').val()){
+		$('#lead_name').closest('.form-group').addClass('has-error');
+		return;
+	}
+	
+	lead = {
+		'name'             : name,
+		'comment'          : comment,
+		'category'         : category,
+		'nextFollowUpTime' : $('#next_follow_up').val() ? $('#next_follow_up').val() + ':00' : '',
+		'source'           : source,
+		'priority'         : $('#priority').val(),
+		'status'           : $('#status').val(),
+		'important'        : $('#important').prop('checked'),
+		'leadMainExtras'   : {
+			'aboutUs' : aboutUs,
+			'address' : address,
+		}
+	}
+	
+	console.log("lead -------->>>",lead)
+	
+	return lead;
+}
+
+function setupLeadsTable() {
+
+	var url = '/api/leads/page_list';
+
+	var parm = undefined;
+
+	if (location.href.indexOf('?') > 0) {
+
+		parm = location.href.substring(location.href.indexOf('?'), location.href.length);
+		url += parm;
+
+	}
+
+	var name = "leadsTable";
+
+	var columns = setUpColumns();
+
+	var columnDefs = [{
+		orderable: false,
+		className: 'select-checkbox',
+		targets: 0,
+
+	},
+
+	{
+		orderable: true,
+		targets: [0],
+		orderSequence: ["desc", "asc",]
+
+	}];
+
+	var select = {
+
+		style: 'os',
+		selector: 'td:first-child'
+
+	};
+
+	var orderIndex = columns.length - 1;
+
+	tableInit(name, columns, [0, "desc"], columnDefs, select, url);
+
+}
+
+function setUpColumns() {
+		console.log("table render");
+		var columns = [];
+		columns.push({
+
+			"data": "id",
+			"defaultContent": "",
+			"render": function (data, type, row) {
+				return "<input class = 'hidden' value = " + data + ">";
+			},
+			"orderable": false
+		});
+
+		columns.push({
+		    "data": "leadID",
+		    "render": function (data, type, row) {
+		        var content = data;
+		        content += "<div class='button-container' style='margin-top: 5px; display: flex; flex-wrap: wrap; gap: 5px;'>";
+		
+		        // Contact button
+		        content += "<a class='btn btn-primary btn-xs contact-button' title='Contacts'  target='_blank' href='/user/dashboard/leads/conatcts?leadID=" + row.leadID + "'><i class='fa fa-user'></i>";
+		        if (row.contactCount)
+		            content += "&nbsp;" + row.contactCount;
+		        content += "</a>";
+		
+		        // Activity button
+		        content += "<a class='btn btn-default btn-xs' title='Activities' target='_blank' href='/user/dashboard/leads/activity?leadID=" + row.leadID + "'><i class='fa fa-history'></i></a>";
+		
+		        // Important indicator
+		        if (row.important) {
+		            content += "<span title='Important Lead' class='important-lead'><i class='fa fa-star'></i></span>";
+		        }
+		
+		        content += "</div>";
+		        return content;
+		    }
+		});
+
+
+
+	/*	columns.push({
+			"data": "name",
+			"render": function (data, type, row) {
+				var val = "<a target='_blank' href='/dashboard/leads/profile?leadID=" + row.id + "'>";
+					
+					val += data + "</a>";
+					
+					if(row.status)
+						val += "<br/>";
+					if(row.status)
+						val += "<span class='" + row.statusStyle +"'>" + row.status + "</span>";
+					if(row.priority)
+						val += "&nbsp;<span class='" + row.priorityStyle +"'>" + row.priority + "</span>";
+					
+					return val;
+			}
+		});*/
+		
+		columns.push({
+    "data": "name",
+    "render": function (data, type, row) {
+        // Start with the main link for the name href='/dashboard/leads/profile?leadID=
+        var val = "<a class='lead-name-link' target='_blank' " + row.id + "'>";
+        val += data + "</a>";
+
+        // Add status badge if it exists
+        if (row.status) {
+            val += "<br/>";
+
+            // Determine the status style based on the row's status
+            var statusStyle = "";
+            switch (row.status) {
+                case "Open":
+                    statusStyle = "badge badge-secondary";
+                    break;
+                case "Processing":
+                    statusStyle = "badge badge-primary";
+                    break;
+                case "Proposal":
+                    statusStyle = "badge badge-warning";
+                    break;
+                case "Close":
+                    statusStyle = "badge badge-success";
+                    break;
+                case "Invalid":
+                case "Not Interested":
+                    statusStyle = "badge badge-danger";
+                    break;
+                default:
+                    statusStyle = "badge badge-light"; // Default style
+            }
+
+            val += "<span class='" + statusStyle + " status-badge'>" + row.status + "</span>";
+        }
+
+        // Add priority badge if it exists
+        if (row.priority) {
+            // Determine the priority style based on the row's priority
+            var priorityStyle = "";
+            switch (row.priority) {
+                case "Low":
+                    priorityStyle = "badge badge-secondary";
+                    break;
+                case "Medium":
+                    priorityStyle = "badge badge-info";
+                    break;
+                case "High":
+                    priorityStyle = "badge badge-warning";
+                    break;
+                case "Critical":
+                    priorityStyle = "badge badge-danger";
+                    break;
+                default:
+                    priorityStyle = "badge badge-light"; // Default style
+            }
+
+            val += " <span class='" + priorityStyle + " priority-badge'>" + row.priority + "</span>";
+        }
+
+        return val;
+    }
+});
+
+
+				
+		columns.push({
+			"data": "category",
+			"render": function (data, type, row) {
+				if (data != null) {
+					return data;
+				} else {
+					return '';
+				}
+			},
+			
+			"orderable": false
+		});
+		
+		
+/*	if(showMerchant){
+			columns.push({
+			"data": "assignedTo",
+			"render": function (data, type, row) {
+				var userName = "";
+				if(data){
+					userName = data.userName;
+				}
+				return userName;
+			}	
+		});
+	}*/
+
+	/*	columns.push({
+			"data": "assignedTo",
+			"render": function (data, type, row) {
+				var userName = "";
+				if(data){
+					userName = data.userName;
+				}
+				return userName;
+			}	
+		});
+				
+		columns.push({
+			"data": "memberCount",
+			"render": function (data, type, row) {
+				if (data != null) {
+					return data;
+				} else {
+					return '';
+				}
+			}
+		});*/
+		
+		columns.push({
+			"data": "comment",
+			"render": function (data, type, row) {
+				var content = '';
+				if(data)
+					content = "<textarea rows = '2' style = 'border:none;width:100%;font-size:10px' readonly>" + data + "</textarea>";
+				return content;
+			}
+		});
+		
+	/*	columns.push({
+			"data": "creationTime",
+			"render": function (data, type, row) {
+				var content = data;
+				if(showMerchant){
+					content += "<br/>";
+					content += "<Span class = 'label label-info'>" + row.createdBy.userName + "<span>";
+				}
+				
+				return content;
+			}
+		});*/
+		
+		columns.push({
+			"data": "creationTime",
+			"render": function (data, type, row) {
+				var content = data;
+				
+				return content;
+			}
+		});
+		
+		
+		
+		console.log("columns values :  " + JSON.stringify(columns));
+		return columns;
+	}
+	
+function appendOption(newOption){
+	$('#source').append('<option value="' + newOption +'">' + newOption + '</option>');
+	$('#source').val(newOption);
+	$('#source').selectpicker('refresh');
+	$('#source').selectpicker('render');
+}
+		
+function setSelectListener(){
+	
+	// Append On Enter Key Event listener on Search Box for Source and category
+	
+	$('.bs-searchbox :input').eq(0).keyup(function(e){
+		var key = e.which;
+		
+		if(key == 13){
+			appendOption('source',$(this).val())
+			return false;
+		}
+	});
+	
+	$('.bs-searchbox :input').eq(1).keyup(function(e){
+		var key = e.which;
+		
+		if(key == 13){
+			appendOption('lead_category',$(this).val())
+			return false;
+		}
+	});
+}
+		
+function appendOption(selectID,newOption){
+	var el = $('#' + selectID);
+	el.append('<option value="' + newOption + '">'+newOption +'</option>');
+	el.val(newOption);
+	el.selectpicker('refresh');
+	el.selectpicker('render');
+}
+		
+		
+function filter(){
+	
+	params = "";
+	var url = '/user/dashboard/leads';
+	
+	var filterFields = [
+		
+						['#start_date','startDate'],['#end_date','endDate'],
+						['#leadID','leadID'],['#leadName','leadName'],
+						['#filter_status','status'],['#filter_priority','priority'],	
+					    ]
+	
+	if($('#filter_important').length > 0 && $('#filter_important').prop('checked')){
+		url += '?important=true'
+	}
+	
+	com_invokeUrlWithParms(url,filterFields,'leadsTable');
+}
+		
+function setupDatePickerFilter(){
+	
+	var datePickerOptions = {
+        format: 'yyyy-mm-dd',
+        autoclose: true
+    };
+    $('#date_picker_start').datepicker(datePickerOptions);
+    $('#date_picker_end').datepicker(datePickerOptions);
+}
+
+function closeModal() {
+    location.reload();
+}
+
+
+</script>
+</body>
+</html>

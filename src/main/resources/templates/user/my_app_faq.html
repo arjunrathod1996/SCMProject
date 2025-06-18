@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org" th:fragment="parent(content,title,script)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport meta tag -->
+
+<head>
+    <!--<title data-th-text="${user != null && user.firstName != null ? user.firstName : ''}">Profile Page</title>-->
+    <title data-th-text="${customer != null ? (customer.getFirstName() != null ? customer.getFirstName() : (customer.getMobileNumber() != null ? customer.getMobileNumber() : 'Profile Page')) : 'Profile Page'}">Profile Page</title>
+
+    <!-- Bootstrap Datepicker CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+
+    <!-- DataTables CSS -->  
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
+    <!-- DataTables Bootstrap 4 Integration CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
+
+    <!-- DataTables Select CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+    
+    <!-- Common CSS -->
+   <link rel="stylesheet" th:href="@{/css/common.css}">
+   <!-- Font Awesome -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+    <!-- Custom CSS -->
+  	<link rel="stylesheet" th:href="@{/css/custom.css}">
+    <link rel="stylesheet" th:href="@{/css/sidebar.scss}">
+    <link rel="stylesheet" th:href="@{/css/min.css}">
+    <link rel="stylesheet" th:href="@{/css/admin2.css}">
+	 <style>
+     	.centered-content {
+		    padding-left: 15px;  /* default padding for mobile devices */
+		    padding-right: 15px; /* default padding for mobile devices */
+		}
+
+		@media (min-width: 1200px) {
+		    .centered-content {
+		        padding-left: 400px; /* increased padding for larger screens */
+		        padding-right: 400px; /* increased padding for larger screens */
+		    }
+		}
+		
+		
+		 /* CSS animation definition */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    /* Apply animation to the card */
+    .card {
+        animation: fadeIn 0.5s ease-out; /* Adjust the animation duration and timing function as needed */
+    }
+    
+    /* CSS to make the answer content responsive */
+.responsive-content {
+    max-width: 100%; /* Ensure the content does not overflow its container */
+    height: auto; /* Allow the content to adjust its height based on its width */
+}
+
+/* Optional: If you want images inside the answer content to be responsive */
+.responsive-content img {
+    max-width: 100%; /* Make images inside the content responsive */
+    height: auto; /* Allow images to adjust their height based on their width */
+}
+
+/* Optional: If you want videos inside the answer content to be responsive */
+.responsive-content iframe, .responsive-content video {
+    max-width: 100%; /* Make videos inside the content responsive */
+    height: auto; /* Allow videos to adjust their height based on their width */
+}
+
+		
+    </style>
+</head>
+
+<body>
+
+   <div th:replace="~{user/my_abb_navbar :: my_app}"></div> 
+     
+	
+<div class="container-fluid" style="margin-top: 100px;">
+    <div class="row justify-content-center">
+        <div class="col-xl-12 col-lg-7 centered-content mx-auto">
+			
+			<div class="d-flex justify-content-start m-0 font-weight-bold">
+		                 <button type="button" class="btn btn-info small" onclick="goBack()">
+                    		<i class="fas fa-arrow-left"></i> Go Back
+                		</button>
+		            </div>
+			
+			
+            <div class="card shadow ">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="m-0 d-flex justify-content-between align-items-center">
+                        <span>FAQ</span>
+                    </h5>
+                </div>
+                <div class="card-body" style="margin-bottom: 100px;">
+                    <div class="input-group mb-3">
+                        <input type="text" id="search_faq" class="form-control" placeholder="Search FAQ">
+                        <div class="input-group-append">
+                            <button id="search_faq_btn" class="btn btn-primary">Search</button>
+                        </div>
+                        <div class="input-group-append">
+                            <button id="clear_search_btn" class="btn btn-secondary">Clear Search</button>
+                        </div>
+                    </div>
+                    <div id="accordion">
+                        <div class="card" th:each="topic, iterStat : ${faq}">
+                            <div class="card-header btn" 
+                                 th:id="'heading_' + ${topic.id}" 
+                                 th:data-toggle="collapse" 
+                                 th:data-target="'#collapse_' + ${topic.id}" 
+                                 aria-expanded="${iterStat.index == 0 ? 'true' : 'false'}"
+                                 th:aria-controls="'collapse_' + ${topic.id}">
+                                <h5 class="mb-0" style="font-size: 16px; padding: 5px;">
+                                    <span th:text="${topic.topic}"></span>
+                                    
+                                </h5>
+                            </div>
+                            <div th:id="'collapse_' + ${topic.id}" 
+                             class="collapse" 
+                             th:aria-labelledby="'heading_' + ${topic.id}" 
+                             th:classappend="${iterStat.index == 0 ? 'show' : ''}"  
+                             data-parent="#accordion">
+                           <div class="card-body">
+    <div class="accordion" id="qaAccordion">
+        <div th:each="qa, iterStat : ${topic.questionsAndAnswers}">
+            <!-- Apply animation to each card -->
+            <div class="card mt-2" 
+                 th:style="'border-left: 5px solid ' + (${iterStat.index % 3 == 0 ? '#007bff' : iterStat.index % 3 == 1 ? '#6c757d' : '#ffc107'})">
+                <div class="card-body">
+                    <span class="font-weight-bold text-primary text-uppercase mb-1" style="font-size: 14px;" th:text="${qa.question}"></span>
+                    <div class="responsive-content">
+						<span class="text-xs font-weight-bold text-warning text-uppercase mb-1" th:utext="${qa.getAnswer()}"></span>
+					</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<footer style="margin-bottom: 100px;" th:replace="~{user/my_footer :: footer}"></footer>
+
+
+<!-- ./content container-->
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!-- Bootstrap JS (Optional) Important !!!--> 
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTables Bootstrap 4 Integration JS -->
+<!-- <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js"></script> -->
+
+<!-- DataTables Select JS -->
+<script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.standalone.min.css" integrity="sha512-D5/oUZrMTZE/y4ldsD6UOeuPR4lwjLnfNMWkjC0pffPTCVlqzcHTNvkn3dhL7C0gYifHQJAIrRTASbMvLmpEug==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css" integrity="sha512-34s5cpvaNG3BknEWSuOncX28vz97bRI59UnVtEEpFX536A7BtZSJHsDyFoCl8S7Dt2TPzcrCEoHBGeM4SUBDBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.min.css" integrity="sha512-aQb0/doxDGrw/OC7drNaJQkIKFu6eSWnVMAwPN64p6sZKeJ4QCDYL42Rumw2ZtL8DB9f66q4CnLIUnAw28dEbg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.standalone.min.css" integrity="sha512-t+00JqxGbnKSfg/4We7ulJjd3fGJWsleNNBSXRk9/3417ojFqSmkBfAJ/3+zpTFfGNZyKxPVGwWvaRuGdtpEEA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Your custom scripts -->
+<script src="/js/script.js"></script> 
+<script src="/js/side.js"></script>
+<script src="/js/admin2.js"></script>
+<script src="/js/admin2_min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+
+<script type="text/javascript">
+	
+	// Check the state of each topic after the page is loaded
+        $('.card-header').each(function() {
+            var isExpanded = $(this).attr('aria-expanded');
+            if (isExpanded === 'true') {
+                $(this).find('.fa-chevron-down').addClass('rotate'); // Add rotation to the arrow
+            }
+        });
+
+        // Toggle rotation of the arrow when a topic is expanded or collapsed
+        $('.card-header').click(function() {
+            $(this).find('.fa-chevron-down').toggleClass('rotate');
+        });
+	
+	 
+	  // Search button click event
+        $('#search_faq_btn').click(function() {
+            var searchTerm = $('#search_faq').val().toLowerCase();
+            $('.card-header').each(function() {
+                var topicText = $(this).text().trim().toLowerCase();
+                if (topicText.includes(searchTerm)) {
+                    $(this).closest('.card').find('.collapse').collapse('show');
+                }
+            });
+        });
+
+        // Clear button click event
+        $('#clear_search_btn').click(function() {
+            $('#search_faq').val(''); // Clear the search input field
+            $('.collapse').collapse('hide'); // Collapse all accordion panels
+        });
+	
+ function goBack() {
+        window.history.back();
+    }
+
+</script>
+</body>
+</html>

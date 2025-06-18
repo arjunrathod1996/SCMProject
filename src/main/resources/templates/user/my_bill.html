@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org" th:fragment="parent(content,title,script)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport meta tag -->
+
+<head>
+   <!-- <title data-th-text="${user.getFirstName()}">Profile Page</title>-->
+    <title data-th-text="${customer != null ? (customer.getFirstName() != null ? customer.getFirstName() : (customer.getMobileNumber() != null ? customer.getMobileNumber() : 'Profile Page')) : 'Profile Page'}">Profile Page</title>
+
+
+    <!-- Bootstrap Datepicker CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+
+    <!-- DataTables CSS -->  
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
+    <!-- DataTables Bootstrap 4 Integration CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
+
+    <!-- DataTables Select CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+    
+    <!-- Common CSS -->
+   <link rel="stylesheet" th:href="@{/css/common.css}">
+   <!-- Font Awesome -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+    <!-- Custom CSS -->
+  	<link rel="stylesheet" th:href="@{/css/custom.css}">
+    <link rel="stylesheet" th:href="@{/css/sidebar.scss}">
+    <link rel="stylesheet" th:href="@{/css/min.css}">
+    <link rel="stylesheet" th:href="@{/css/admin2.css}">
+	 <style>
+     	.centered-content {
+		    padding-left: 15px;  /* default padding for mobile devices */
+		    padding-right: 15px; /* default padding for mobile devices */
+		}
+
+		@media (min-width: 1200px) {
+		    .centered-content {
+		        padding-left: 400px; /* increased padding for larger screens */
+		        padding-right: 400px; /* increased padding for larger screens */
+		    }
+		}
+		
+		
+		#rewards_table {
+            margin-bottom: 0px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .bill-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bill-body {
+            padding: 15px;
+        }
+        .bill-footer {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+            text-align: right;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .item-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .item-details {
+            font-size: 14px;
+        }
+        .total-amount {
+            font-size: 16px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .alert-success {
+    background-color: lightgreen;
+    color: darkgreen;
+}
+
+.alert-danger {
+    background-color: lightcoral;
+    color: darkred;
+}
+
+.hidden {
+    display: none;
+}
+
+		
+    </style>
+</head>
+
+<body>
+
+   <div th:replace="~{user/my_abb_navbar :: my_app}"></div> 
+     
+	<div class="container-fluid" style="margin-top: 50px;">
+	    <div class="row">
+	        <div class="col-xl-12 col-lg-7 centered-content mx-auto">
+	           <div class="container mt-5">
+        <div id="rewards_table">
+            <div class="bill-header">
+				<span>Invoice</span>
+                <div>
+                    <button type="button" class="btn btn-light btn-sm mr-2" onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i> Go Back
+                    </button>
+                    <button id="btn_submit" type="button" class="btn btn-success btn-sm" onclick="buyItems()">
+                        <i class="fas fa-shopping-cart"></i> Buy
+                    </button>
+                </div>
+			</div>
+            <div class="bill-body">
+                <table class="table">
+                 
+                    <tbody>
+				    <tr th:each="car : ${cartItem}" th:attr="data-id=${car.id}">
+				        <td>
+				            <div>
+				                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+				                    <div class="col-xs-6">
+				                        <div class="item-name">
+				                            <span th:text="${car.photoMerchant.photoExtras.title}">Example Item</span>
+				                            <div method="post" style="display: inline;">
+				                                <input type="hidden" name="itemId" th:value="${car.id}" />
+				                                <button id="btn_submit_remove_{{cart.id}}" type="button" th:onclick="'removeItem(' + ${car.id} + ', ' + ${car.amount} + ' )'" class="btn btn-link" style="color: red;">
+				                                    <i class="fas fa-times"></i>
+				                                </button>
+				                            </div>
+				                        </div>
+				                    </div>
+				                    <div class="col-xs-6 text-right">
+				                        <div class="text-muted item-details">
+				                            <span th:text="${car.photoMerchant.type}">Example Category</span>
+				                        </div>
+				                    </div>
+				                </div>
+				                <div style="display: flex; justify-content: space-between;">
+				                    <div class="col-xs-6">
+				                        <div class="item-details">
+				                            <span>Quantity: </span>
+				                            <span th:text="${car.quantity}">10</span>
+				                            <span> * Price: </span>
+				                            <span th:text="${car.price}">$20.00</span>
+				                        </div>
+				                    </div>
+				                    <div class="col-xs-6 text-right">
+				                        <div class="text-muted item-details">
+				                            <span>Total Amount: </span>
+				                            <span th:text="${car.amount}" class="total-amount" th:attr="data-amount=${car.amount}">$200.00</span>
+				                        </div>
+				                    </div>
+				                </div>
+				                <hr style="margin-top: 10px; margin-bottom: 10px; border-color: #ddd;">
+				            </div>
+				        </td>
+				    </tr>
+				</tbody>
+                    
+                </table>
+            </div>
+            <div class="bill-footer" style="margin-bottom: 50px;">
+				<input id="shortLink" type="hidden" th:value="${shortLink}">
+				<input id="staffLink" type="hidden" th:value="${staffLink}">
+               <!-- Grand Total: <span th:text="${totalAmount}">$1000.00</span> -->
+                Grand Total: <span id="grandTotal" th:text="${totalAmount}">$1000.00</span>
+            </div>
+            <div  id="message_status" class="alert hidden mt-3"></div>
+            <div  id="message_status_removed" class="alert hidden mt-3"></div>
+        </div>
+    </div>
+	        </div>
+	    </div>
+	</div>
+
+
+<footer style="margin-bottom: 100px;" th:replace="~{user/my_footer :: footer}"></footer>
+
+
+<!-- ./content container-->
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!-- Bootstrap JS (Optional) Important !!!--> 
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTables Bootstrap 4 Integration JS -->
+<!-- <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js"></script> -->
+
+<!-- DataTables Select JS -->
+<script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.standalone.min.css" integrity="sha512-D5/oUZrMTZE/y4ldsD6UOeuPR4lwjLnfNMWkjC0pffPTCVlqzcHTNvkn3dhL7C0gYifHQJAIrRTASbMvLmpEug==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css" integrity="sha512-34s5cpvaNG3BknEWSuOncX28vz97bRI59UnVtEEpFX536A7BtZSJHsDyFoCl8S7Dt2TPzcrCEoHBGeM4SUBDBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.min.css" integrity="sha512-aQb0/doxDGrw/OC7drNaJQkIKFu6eSWnVMAwPN64p6sZKeJ4QCDYL42Rumw2ZtL8DB9f66q4CnLIUnAw28dEbg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.standalone.min.css" integrity="sha512-t+00JqxGbnKSfg/4We7ulJjd3fGJWsleNNBSXRk9/3417ojFqSmkBfAJ/3+zpTFfGNZyKxPVGwWvaRuGdtpEEA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Your custom scripts -->
+<script src="/js/script.js"></script> 
+<script src="/js/side.js"></script>
+<script src="/js/admin2.js"></script>
+<script src="/js/admin2_min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+
+<script type="text/javascript">
+	
+
+ function removeItem(itemId, itemAmount) {
+        const row = document.querySelector(`tr[data-id="${itemId}"]`);
+        const amountElement = row.querySelector('.total-amount');
+        
+        // Strike through the amount
+        amountElement.style.textDecoration = 'line-through';
+        amountElement.style.color = 'green';
+        
+        // Mark the row as removed
+        row.classList.add('removed');
+        
+        // Recalculate grand total
+        let grandTotal = 0;
+        document.querySelectorAll('.total-amount').forEach(element => {
+            if (!element.closest('tr').classList.contains('removed')) {
+                grandTotal += parseFloat(element.getAttribute('data-amount'));
+            }
+        });
+        
+        // Update grand total
+        document.getElementById('grandTotal').innerText = '$' + grandTotal.toFixed(2);
+
+        // Get shortLink and staffLink values
+        const shortLink = document.getElementById('shortLink').value;
+        const staffLink = document.getElementById('staffLink').value;
+        
+       // Send data to backend
+		var url = '/cart/removeItem?itemId=' + itemId;
+		
+		var params = [];
+		
+		// Append shortLink if it exists
+		if (shortLink) {
+		    params.push('shortLink=' + shortLink);
+		}
+		
+		// Append staffLink if it exists
+		if (staffLink) {
+		    params.push('staffLink=' + staffLink);
+		}
+		
+		// Join parameters with '&' and append to the URL
+		if (params.length > 0) {
+		    url += '&' + params.join('&');
+		}
+		
+		console.log('url : ' + url);
+
+       $.ajax({
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        timeout: 60000,
+        data: JSON.stringify({}), // Send an empty JSON object as the request body
+        type: 'POST',
+        url: url,
+        beforeSend: function() {
+            com_disableClick('btn_submit_remove');
+        },
+    }).done(function(data, textStatus, jqXHR) {
+        statusAlertWidget('#message_status_removed', 'alert alert-success', 'Successfully Removed Item...');
+        setTimeout(function() {
+            window.location.reload();
+        }, 1500);
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        if (jqXHR && jqXHR.responseText) {
+            statusAlertWidget('#message_status_removed', 'alert alert-danger', 'Failed: ' + jqXHR.responseText);
+        } else {
+            statusAlertWidget('#message_status_removed', 'alert alert-danger', 'Failed to Remove...');
+        }
+    });
+    }
+
+function buyItems() {
+    var shortLink = $('#shortLink').val();
+    var staffLink = $('#staffLink').val();
+    var url = '/cart/access/' + shortLink + '/' + staffLink + '/bill';
+
+    console.log("url", url);
+
+    $.ajax({
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        timeout: 60000,
+        type: 'POST',
+        url: url,
+        beforeSend: function() {
+            com_disableClick('btn_submit');
+        },
+    }).done(function(data, textStatus, jqXHR) {
+        statusAlertWidget('#message_status', 'alert alert-success', 'Successfully Submitted...');
+         setTimeout(function() {
+            window.location.reload();
+        }, 1500);
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        if (jqXHR && jqXHR.responseText) {
+            statusAlertWidget('#message_status', 'alert alert-danger', 'Failed: ' + jqXHR.responseText);
+        } else {
+            statusAlertWidget('#message_status', 'alert alert-danger', 'Failed to Save');
+        }
+    });
+}
+
+function statusAlertWidget(selector, alertClass, message) {
+    $(selector).removeClass('hidden')
+               .removeClass('alert-success alert-danger')
+               .addClass(alertClass)
+               .text(message)
+               .fadeIn();
+
+    // Hide the message after a few seconds (optional)
+    setTimeout(function() {
+        $(selector).fadeOut();
+    }, 3000);
+}
+
+
+ function goBack() {
+        window.history.back();
+    }
+
+</script>
+</body>
+</html>

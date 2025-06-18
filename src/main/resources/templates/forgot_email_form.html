@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" th:fragment="parent(content,title,script)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport meta tag -->
+<head>
+    <title>Login</title>
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <!-- Flowbite CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css">
+
+    <style>
+        .fade-out {
+            animation: fadeOut 2s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                display: none;
+            }
+        }
+    </style>
+
+</head>
+<body>
+
+    <div th:replace="~{navbar :: navbar}"></div>
+
+
+<div>
+    <!-- style="margin-top: 80px; @media (max-width: 768px) { margin-top: 200px; }" -->
+    <div id="content" style="margin-top: 130px;">
+		<form class="max-w-xs mx-auto" th:action="@{/send-otp}" method="post">
+			<div class="flex items-center p-4 mb-4 text-sm text-green-800 border border-green-300 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 dark:border-green-800" role="alert">
+			  <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+			    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+			  </svg>
+			  <span class="sr-only">Info</span>
+			  <div>
+			    <span class="font-medium">Success alert!</span> Change a few things up and try submitting again.
+			  </div>
+			</div>
+		    <div class="relative">
+		        <span class="absolute start-0 bottom-3 text-gray-500 dark:text-gray-400">
+		           <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+					  <path fill="#4285F4" d="M46.422 23.142c0-1.41-.125-2.767-.362-4.068H24v7.722h12.046c-.536 2.89-2.27 5.332-4.77 6.936v5.76h7.698c4.512-4.164 7.097-10.298 7.097-17.35z"/>
+					  <path fill="#34A853" d="M24 47c6.437 0 11.85-2.118 15.822-5.758l-7.698-5.76c-2.14 1.43-4.862 2.282-8.124 2.282-6.236 0-11.525-4.225-13.396-9.92H2.532v6.222C6.507 42.23 14.058 47 24 47z"/>
+					  <path fill="#FBBC05" d="M10.604 28.15A13.91 13.91 0 0 1 10 24c0-1.33.197-2.62.536-3.85V13.93H2.532A23.974 23.974 0 0 0 0 24c0 3.87.922 7.548 2.532 10.77l8.072-6.223z"/>
+					  <path fill="#EA4335" d="M24 9.666c3.552.638 6.773 1.762 9.438 3.35l7.122-7.122C35.851 3.852 30.437 1.666 24 1.666c-9.942 0-17.493 4.77-22.175 12.44l8.072 6.222C12.474 13.89 17.764 9.666 24 9.666z"/>
+					</svg>
+		        </span>
+		        <input required type="text" name="email" id="email" class="block py-2.5 ps-6 pe-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
+		        <label for="email" class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:start-6 peer-focus:start-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto">Email</label>
+		    </div>
+		    <div class="relative mt-4">
+		        <span class="absolute start-0 bottom-3 text-gray-500 dark:text-gray-400">
+		           <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.1 0 2-.9 2-2V7a2 2 0 1 0-4 0v2c0 1.1.9 2 2 2zm0 2c-1.1 0-2 .9-2 2v4h4v-4c0-1.1-.9-2-2-2zm6 4v4h2v-4a8 8 0 0 0-8-8V7a4 4 0 1 0-8 0v2a8 8 0 0 0-2 8v4h2v-4a8 8 0 0 1 16 0z"/>
+					</svg>
+		        </span>
+		        <input required type="otp" name="otp" id="otp" class="block py-2.5 ps-6 pe-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
+		        <label for="otp" class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:start-6 peer-focus:start-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto">OTP</label>
+		    </div>
+		    <div class="mt-3">
+				 <button type="submit" class="text-white w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Send verification code</button>
+			</div>
+		</form>
+
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+<script>
+    $(function() {
+        setTimeout(function() {
+            $('#errorAlert').fadeOut();
+            $('#logoutAlert').fadeOut();
+        }, 3000); // Fade out after 2 seconds (2000 milliseconds)
+    });
+    
+ /*  window.history.forward();
+    function noBack() {
+        window.history.forward();
+    }*/
+    
+    function disableBack() { window.history.forward() }
+
+    window.onload = disableBack();
+    window.onpageshow = function(evt) { if (evt.persisted) disableBack() }
+
+</script>
+</body>
+</html>

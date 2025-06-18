@@ -1,0 +1,87 @@
+
+
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security5"> <!--xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"-->
+
+<style>
+	@media (max-width: 768px) {
+    #navbarNav {
+        padding-top: 20px; /* Adjust the value as needed */
+    }
+    
+    /* CSS for small screens */
+@media (max-width: 576px) {
+    .navbar .container .row .col {
+        width: 100%;
+    }
+    .navbar .container .row .col i {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+}
+
+/* Define styles for the home button icon */
+.home-link {
+    color: #007bff; /* Set the color of the icon */
+    font-size: 24px; /* Set the font size of the icon */
+    text-decoration: none; /* Remove underline from the link */
+}
+
+/* Add hover effect to the home button icon */
+.home-link:hover {
+    color: #0056b3; /* Change the color on hover */
+}
+
+
+</style>
+
+<body >
+	
+	
+	<!--<footer th:fragment="footer" class="  navbar-light bg-light fixed-bottom" >
+    <div class="container">
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link 1</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link 2</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link 3</a>
+                </li>
+                 Add more links as needed 
+            </ul>
+        </div>
+    </div>
+</footer>
+-->
+
+<!--<div th:fragment="footer" class="navbar navbar-expand navbar-light bg-white fixed-bottom shadow" style="max-width: 100%; z-index: 10000;">
+    <div class="container justify-content-center">
+            <div class="col text-center">
+                <i class="fas fa-home"></i>  Home Button 
+            </div>
+    </div>
+</div>-->
+
+<div th:fragment="footer" class="navbar navbar-expand navbar-light bg-white fixed-bottom shadow" style="max-width: 100%; z-index: 10000;">
+    <div class="container justify-content-center">
+        <div class="col text-center">
+            <a href="/my_app/access" class="home-link">
+                <i class="fas fa-home"></i> <!-- Home Button Icon -->
+            </a>
+        </div>
+    </div>
+</div>
+
+
+
+</body>

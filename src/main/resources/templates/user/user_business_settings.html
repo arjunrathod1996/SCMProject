@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org" th:fragment="parent(content,title,script)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport meta tag -->
+
+<head>
+    <title data-th-text="${user.getFirstName()}">Profile Page</title>
+
+    <!-- Bootstrap Datepicker CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
+    <!-- DataTables Bootstrap 4 Integration CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
+
+    <!-- DataTables Select CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+    
+    <!-- Common CSS -->
+   <link rel="stylesheet" th:href="@{/css/common.css}">
+   <!-- Font Awesome -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+    <link rel="stylesheet" th:href="@{/css/sidebar.scss}">
+    <link rel="stylesheet" th:href="@{/css/min.css}">
+    <link rel="stylesheet" th:href="@{/css/admin2.css}">
+    
+    <style>
+		 .checkbox-label {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        /* Define the shadow effect */
+       
+        /* Define the light blur color */
+        .light-blur {
+            background-color: #f0f0f0; /* Adjust the color as needed */
+        }
+	</style>
+
+</head>
+
+<body>
+
+    <div th:replace="~{user/user_sidebar :: user_sidebar}" ></div>
+
+   <div id="responsiveContainerAlert" >
+        <div  id="status_alert_content"  class="alert hidden alert-warning container text-center"  role="alert">
+           
+        </div>
+   </div>
+      
+    <!-- <div id="content"> -->
+    <div  class="container small_screen " id="responsiveContainer" >
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800 text-primary">Business Settings</h1>
+         <div class="ml-auto">
+            <form class="form-inline">
+                <input id="search_feature" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                <!--<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>-->
+            </form>
+        </div>
+    </div>
+    
+    <!-- ./Page Heading -->
+    <!-- Horizonatal Line -->
+    <hr class="mt-0 mb-4">
+    <!-- ./Horizonatal Line -->
+    <!-- Search Data -->                
+    <div class="flex-wrap align-items-center mb-4 small">
+        <!--<div class="row">
+	        <div class="col-lg-3">
+	            <div class="form-group">
+	                <label class="control-label">Select Business</label>
+	                <input type="hidden" id="businessId" th:value="${businessID}"></input>
+	                <span>
+	                    <input id="business" class="form-control" type="text" placeholder="Business Name"
+	                        th:value="${business != null} ? ${business.getName()}">
+	                    <input id="business_id" class="form-control" type="hidden" th:value="${business != null} ? ${business.getId()}">
+	                    <small class="help-block"> Type first 3 characters...</small>
+	                </span>
+	            </div>
+	        </div>
+	    </div>-->
+    <!-- ./Search Data -->
+    <!-- Buttons -->
+		   <form>
+			<div class="row">
+			    <div class="col-12">
+					<input type="hidden" id="businessId" th:value="${businessID}"></input>
+			        <div class="card shadow mb-4">
+			            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+			                <h6 class="m-0 font-weight-bold text-primary">Membership Features</h6>
+			            </div>
+			            <div class="card-body">
+			                <div class="row" id="features">
+			                    <!-- First three features -->
+			                   <div class="col-lg-4 mb-4 feature-item">
+			                        <div class="card light-blur">
+			                            <div class="card-body">
+			                                <h5 class="card-title">Enable Qr Code For Details</h5>
+			                                <div class="panel-body">
+			                                    <label class="checkbox-label">
+			                                        <input id="enable_qrCode" type="checkbox" th:checked="${config != null && config.getEnableQRCode() != null && config.getEnableQRCode()}">
+			                                        <span>Enable Qr Code</span>
+			                                    </label>
+			                                    <small class="help-block">QR Code Generated</small>
+			                                </div>
+			                            </div>
+			                        </div>
+			                    </div>
+			
+			                    <!-- Feature 2 -->
+			                   <div class="col-lg-4 mb-4 feature-item">
+			                        <div class="card light-blur">
+			                            <div class="card-body">
+			                                <h5 class="card-title">Bill Submission</h5>
+			                                <div class="panel-body">
+			                                    <label class="checkbox-label">
+			                                        <input id="enable_bill_submission" 
+			                                        	type="checkbox" th:checked="${config != null && config.getEnableBillSumbission() != null && config.getEnableBillSumbission()}">
+			                                    </label>
+			                                    <small class="help-block">Bill Submission For Membership</small>
+			                                </div>
+			                            </div>
+			                        </div>
+			                    </div>
+			
+			                    <!-- Feature 3 -->
+			                    <div class="col-lg-4 mb-4 feature-item">
+			                        <div class="card light-blur">
+			                            <div class="card-body">
+			                                <h5 class="card-title">Appointment</h5>
+			                                <div class="panel-body">
+			                                    <label class="checkbox-label">
+			                                        <input id="enable_appointment" type="checkbox" 
+			                                        	th:checked="${config != null && config.getEnableAppointment() != null && config.getEnableAppointment()}">
+			                                    </label>
+			                                    <small class="help-block">Appointment For Membership</small>
+			                                </div>
+			                            </div>
+			                        </div>
+			                    </div>
+			                </div>
+			
+			                <!-- Feature 4 -->
+			                <div class="row">
+			                    <div class="col-lg-4 mb-4 feature-item">
+			                        <div class="card light-blur">
+			                            <div class="card-body">
+			                                <h5 class="card-title">Extra Settings 4</h5>
+			                                <div class="panel-body">
+			                                    <label class="checkbox-label">
+			                                        <input id="enable_qrCode4" type="checkbox" >
+			                                        <span>Extra Settings 4</span>
+			                                    </label>
+			                                    <small class="help-block">Extra Settings 4</small>
+			                                </div>
+			                            </div>
+			                        </div>
+			                    </div>
+			                </div>
+			            </div>
+			        </div>
+			    </div>
+			</div>
+			
+			
+			<div class="row">
+			    <div class="col-12">
+			        <div class="card shadow mb-4">
+			            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+			                <h6 class="m-0 font-weight-bold text-primary">Charges</h6>
+			            </div>
+			            <div class="card-body">
+			                <div class="row" id="features">
+			                    <!-- First three features -->
+			                    <div class="col-lg-4 mb-4 feature-item">
+			                        <div class="card light-blur">
+			                            <div class="card-body">
+			                                <h5 class="card-title">Transaction</h5>
+			                                <div class="panel-body">
+			                                    <label class="checkbox-label">
+			                                        <input id="enable_qrCode" type="checkbox" >
+			                                        <span>Transaction</span>
+			                                    </label>
+			                                    <small class="help-block">Transaction</small>
+			                                </div>
+			                            </div>
+			                        </div>
+			                    </div>
+			
+			                    <!-- Feature 2 -->
+			                  <div class="col-lg-4 mb-4 feature-item">
+			                        <div class="card light-blur">
+			                            <div class="card-body">
+			                                <h5 class="card-title">Create Rule</h5>
+			                                <div class="panel-body">
+			                                    <label class="checkbox-label">
+			                                        <input id="enable_qrCode12" type="checkbox" >
+			                                        <span>Create Rule</span>
+			                                    </label>
+			                                    <small class="help-block">Create Rule</small>
+			                                </div>
+			                            </div>
+			                        </div>
+			                    </div>
+			
+			                    <!-- Feature 3 -->
+			                   <div class="col-lg-4 mb-4 feature-item">
+			                        <div class="card light-blur">
+			                            <div class="card-body">
+			                                <h5 class="card-title">Referral Program</h5>
+			                                <div class="panel-body">
+			                                    <label class="checkbox-label">
+			                                        <input id="enable_qrCode32" type="checkbox" >
+			                                        <span>Referral</span>
+			                                    </label>
+			                                    <small class="help-block">Referral</small>
+			                                </div>
+			                            </div>
+			                        </div>
+			                    </div>
+			                </div>
+			
+			                <!-- Feature 4 -->
+			                <div class="row">
+			                   <div class="col-lg-4 mb-4 feature-item">
+			                        <div class="card light-blur">
+			                            <div class="card-body">
+			                                <h5 class="card-title">Reward Code</h5>
+			                                <div class="panel-body">
+			                                    <label class="checkbox-label">
+			                                        <input id="enable_qrCode434"  type="checkbox">
+			                                        <span>Reward</span>
+			                                    </label>
+			                                    <small class="help-block">Reward Code</small>
+			                                </div>
+			                            </div>
+			                        </div>
+			                    </div>
+			                </div>
+			            </div>
+			        </div>
+			    </div>
+			</div>
+		</form>
+	<div class="row ">
+		<div class="col-lg-12 ">
+			<div class="form-group ">
+				<button id="submit_btn" type="button" class="btn btn-primary " onclick="save()">Submit</button>
+			</div>
+			<div id="update_status" class="alert text-center"></div>
+		</div>
+	</div>
+ </div>
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!-- Bootstrap JS (Optional) Important !!!--> 
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTables Bootstrap 4 Integration JS -->
+<!-- <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js"></script> -->
+
+<!-- DataTables Select JS -->
+<script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.standalone.min.css" integrity="sha512-D5/oUZrMTZE/y4ldsD6UOeuPR4lwjLnfNMWkjC0pffPTCVlqzcHTNvkn3dhL7C0gYifHQJAIrRTASbMvLmpEug==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css" integrity="sha512-34s5cpvaNG3BknEWSuOncX28vz97bRI59UnVtEEpFX536A7BtZSJHsDyFoCl8S7Dt2TPzcrCEoHBGeM4SUBDBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.min.css" integrity="sha512-aQb0/doxDGrw/OC7drNaJQkIKFu6eSWnVMAwPN64p6sZKeJ4QCDYL42Rumw2ZtL8DB9f66q4CnLIUnAw28dEbg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.standalone.min.css" integrity="sha512-t+00JqxGbnKSfg/4We7ulJjd3fGJWsleNNBSXRk9/3417ojFqSmkBfAJ/3+zpTFfGNZyKxPVGwWvaRuGdtpEEA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Your custom scripts -->
+<script src="/js/script.js"></script> 
+<script src="/js/side.js"></script>
+<script src="/js/admin2.js"></script>
+<script src="/js/admin2_min.js"></script>
+
+<!--Type ahead for search-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js" integrity="sha512-HWlJyU4ut5HkEj0QsK/IxBCY55n5ZpskyjVlAoV9Z7XQwwkqXoYdCIC93/htL3Gu5H3R4an/S0h2NXfbZk3g7w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+
+<script type="text/javascript">
+	
+	$(document).ready(function() {
+            $('#search_feature').on('input', function() {
+                var query = $(this).val().toLowerCase();
+                $('.feature-item').each(function() {
+                    var featureTitle = $(this).find('.card-title').text().toLowerCase();
+                    if (featureTitle.includes(query)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+        });
+	
+	function save() {
+			var businessID = undefined;
+			if($('#businessId').val())
+				businessID = $('#businessId').val();
+			else{
+				statusAlertWidget('#update_status','alert-danger','Falied, Select Business');
+				return;
+			}
+			
+			console.log("busienssId ", businessID);
+			
+			var config = {
+				'enableQRCode'                   : $('#enable_qrCode').prop('checked'),
+				'enableAppointment'              : $('#enable_appointment').prop('checked'),
+				'enableBillSumbission'           : $('#enable_bill_submission').prop('checked'),
+			};
+			
+			var url = '/api/business/config?businessID=' + businessID;
+			
+			statusAlertWidget('#update_status','alert-progress',null);
+			
+			$.ajax({
+				data : JSON.stringify(config),
+				timeout:10000,
+				type:'POST',
+				url:url,
+				contentType : "application/json",
+				beforeSend:function() {
+					com_disableClick('submit_btn');
+				},
+			}).done(function(data,textStatus,jqXHR) {
+				com_enableClick('submit_btn');
+				statusAlertWidget('#update_status','alert-success','Successfully Updated...');
+			}).fail(function(jqXHR,textStatus,errorThrown){
+				com_enableClick('submit_btn');
+				statusAlertWidget('#update_status','alert-danger','Failed to Update...');
+			})
+		}
+
+
+</script>
+</body>
+</html>

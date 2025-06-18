@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="parent(content,title,script)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport meta tag -->
+<head>
+    <title>About Page</title>
+
+     <!-- Tailwind CSS -->
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+     <!-- Flowbite CSS -->
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css">
+
+</head>
+
+<body>
+
+        <div th:replace="navbar :: navbar"></div>
+
+        <div id="content">
+            <section id="home" th:fragment="home" class="" style="margin-top: 100px;">
+                <div class="container mx-auto px-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center dark:bg-gray-800 rounded-lg shadow-md p-8">
+                        <!-- Image Section -->
+                        <div>
+                            <img th:src="@{images/1.jpg}" alt="Home Image" class="grid rounded-lg" style="max-width: 100%; height: auto;">
+                        </div>
+                        <!-- Explanation Section -->
+                        <div>
+                            <h2 class="text-3xl font-semibold text-center md:text-left mb-4">Welcome to Our CRM</h2>
+                            <p class="text-lg leading-relaxed mb-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                            <!-- Additional home content -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        
+            <section id="about" th:fragment="about" class="">
+                <div class="container mx-auto px-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center dark:bg-gray-800 rounded-lg shadow-md p-8">
+                        <!-- Explanation Section -->
+                        <div>
+                            <h2 class="text-3xl font-semibold text-center md:text-left mb-4">About Us</h2>
+                            <p class="text-lg leading-relaxed mb-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                            <!-- Additional about content -->
+                        </div>
+                        <!-- Image Section -->
+                        <div>
+                            <img th:src="@{images/2.jpg}" alt="About Image" class="grid rounded-lg" style="max-width: 100%; height: auto;">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        
+            <section id="services" th:fragment="services" class="">
+                <div class="container mx-auto px-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center dark:bg-gray-800 rounded-lg shadow-md p-8">
+                        <!-- Image Section -->
+                        <div>
+                            <img th:src="@{images/3.jpg}" alt="Services Image" class="grid rounded-lg" style="max-width: 100%; height: auto;">
+                        </div>
+                        <!-- Explanation Section -->
+                        <div>
+                            <h2 class="text-3xl font-semibold text-center md:text-left mb-4">Our Services</h2>
+                            <p class="text-lg leading-relaxed mb-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                            <!-- Additional services content -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <script>
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+    var navLinks = document.querySelectorAll('nav a');
+
+    // Function for smooth scrolling
+    function smoothScrollToTarget(e) {
+        e.preventDefault();
+
+        var href = this.getAttribute('href');
+        var targetId = href.substring(1);
+        var targetElement = document.getElementById(targetId);
+
+        // Smooth scroll to the target section
+        window.scrollTo({
+            top: targetElement.offsetTop,
+            behavior: 'smooth'
+        });
+    }
+
+    // Add smooth scrolling event listeners to relevant links
+    navLinks.forEach(function(link) {
+        var href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+            link.addEventListener('click', smoothScrollToTarget);
+        } else if (href === '/login' || href === '/register') {
+            link.addEventListener('click', function(e) {
+                // Perform redirection to login or register page
+                window.location.href = href;
+            });
+        }
+    });
+
+    // Function to handle redirection for home link if necessary
+    var homeLink = document.querySelector('nav a[href="/home"]');
+    if (homeLink) {
+        homeLink.addEventListener('click', function(e) {
+            if (window.location.pathname !== '/home') {
+                e.preventDefault();
+                window.location.href = '/home';
+            }
+        });
+    }
+});
+    </script>
+</body>
+</html>

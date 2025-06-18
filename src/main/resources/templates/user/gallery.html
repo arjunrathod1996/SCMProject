@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org" th:fragment="parent(content,title,script)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport meta tag -->
+
+<head>
+    <title data-th-text="${user.getFirstName()}">Profile Page</title>
+
+    <!-- Bootstrap Datepicker CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    
+     <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Bootstrap Select CSS (Optional for better dropdown) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
+    <!-- DataTables Bootstrap 4 Integration CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
+
+    <!-- DataTables Select CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+    
+    <!-- Cropper -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    
+    <!-- Popper.js -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js" integrity="sha384-oBqDVmMz4fnFO9gyb39vO6pXh5E3I4Jn6Jl6l2U6M1Nf5Ub4nA8eLJ6HRdxX04C2" crossorigin="anonymous"></script>
+	
+    <!-- Common CSS -->
+   <link rel="stylesheet" th:href="@{/css/common.css}">
+   <!-- Font Awesome -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+    <link rel="stylesheet" th:href="@{/css/sidebar.scss}">
+    <link rel="stylesheet" th:href="@{/css/min.css}">
+    <link rel="stylesheet" th:href="@{/css/admin2.css}">
+    
+    <style>
+  .uploadOuter {
+    text-align: center;
+    padding: 20px;
+  }
+  .uploadOuter strong {
+    padding: 0 10px;
+  }
+  .dragBox {
+    width: 250px;
+    height: 100px;
+    margin: 0 auto;
+    position: relative;
+    text-align: center;
+    font-weight: bold;
+    line-height: 95px;
+    color: #999;
+    border: 2px dashed #ccc;
+    display: inline-block;
+    transition: transform 0.3s;
+  }
+  .dragBox input[type="file"] {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    top: 0;
+    left: 0;
+  }
+  .dragBox.draging {
+    transform: scale(1.1);
+  }
+  #preview {
+    text-align: center;
+  }
+  #preview img {
+    max-width: 100%;
+  }
+</style>
+
+</head>
+
+<body>
+
+    <div th:replace="~{user/user_sidebar :: user_sidebar}" ></div>
+
+   <div id="responsiveContainerAlert" >
+        <div  id="status_alert_content"  class="alert hidden alert-warning container text-center"  role="alert">
+           
+        </div>
+   </div>
+      
+    <!-- <div id="content"> -->
+        <div  class="container small_screen" id="responsiveContainer" >
+            <!-- Page Heading -->
+            <div class="d-sm-flex align-items-center justify-content-between mb-4" >
+                <h1 class="h3 mb-0 text-gray-800 text-primary">Gallery</h1>
+            </div>
+            <!-- ./Page Heading -->
+            <!-- Horizonatal Line -->
+            <hr class="mt-0 mb-4">
+            <!-- ./Horizonatal Line -->
+            <!-- Search Data -->                
+            <div class="d-flex flex-wrap align-items-center mb-4 small" >
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                    <div id="date_picker_start" class="input-group date">
+                        <input id="start_date" class="form-control input-sm" type="text"
+                            placeholder="Start Date"
+                            th:value="${param.startDate != null} ? ${param.startDate[0]}"
+                            style="font-size: 12px;" />
+                        <span class="input-group-addon">
+                            <span class="fa fa-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                    <div id="date_picker_end" class="input-group date">
+                        <input id="end_date" class="form-control input-sm" type="text"
+                            placeholder="End Date"
+                            th:value="${param.endDate != null} ? ${param.endDate[0]}"
+                            style="font-size: 12px;" />
+                        <span class="input-group-addon">
+                            <span class="fa fa-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                    <input id="nmae" class="form-control input-sm" type="text" placeholder="Business Name"
+                        th:value="${param.name != null} ? ${param.name[0]}" style="font-size: 12px" />
+                </div>
+                <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
+                    <input id="referred_filter" class="form-control input-sm" type="text" placeholder="Address"
+                        th:value="${param.address != null} ? ${param.address[0]}" style="font-size: 12px" />
+                </div>
+				
+                <div class="form-group mb-2" style="margin-left: 5px; padding: 0;">
+                    <button type="button" class="btn btn-default btn-sm square-border-radius" onclick="filter()">
+                        <i class="fa fa-search" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- ./Search Data -->
+            
+            <div class="form-group mb2" style="width: 150px; margin-left: 5px; padding: 0;">
+				<select id="merchant" name="merchant" class="form-control">
+					<option value="">Common/All</option>
+					 	<option th:each="merchant : ${merchants}" 
+		                    th:value="${merchant.id}" 
+		                    th:text="${merchant.name}"
+		                    th:selected="${selectedMerchant != null and selectedMerchant.id == merchant.id}">
+            			</option>
+				</select> 
+			</div>
+            
+            <!-- Buttons -->
+            <div class="d-sm-flex align-items-center justify-content-end mb-4 small">
+                <div class="btn-group btn-group-sm">
+                    <button data-toggle="modal" onclick="showCreateForm()" class="btn btn-default btn-sm" title="Create Gallery" style="border: 1px solid #ccc; border-radius: 5px;">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                    <button data-toggle="modal" onclick="editSelectedImage()" class="btn btn-default btn-sm ml-2" title="Edit Raffle Pot" style="border: 1px solid #ccc; border-radius: 5px;">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    <button data-toggle="modal" onclick="deleteData()" class="btn btn-default btn-sm ml-2" title="Edit Raffle Pot" style="border: 1px solid #ccc; border-radius: 5px;">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- ./Buttons -->
+            <!-- Table -->
+            <div class=" d-flex flex-wrap align-items-center mb-4 small">
+                <!-- Card Header - Dropdown -->
+                <!--<div class="card-header py-2 d-flex " style="margin-bottom: 10px;">
+                    <h6 class="m-0 font-weight-bold text-primary">Gallery Table</h6>
+                </div>-->
+                <!-- Card Body -->
+                <div class="table-responsive" style="overflow-x: auto;">
+    <div class="container">
+        <div class="row">
+            <!-- Iterate over your photos -->
+            <div th:each="photo : ${photos_}" class="col-md-6">
+                <!-- Display the photo and its details -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <!-- Hidden input for photo ID -->
+                        <input type="hidden" th:value="${photo.id}" class="photo-id" />
+                        <!-- Checkbox for selecting the photo -->
+                        <input style="cursor: pointer;" type="checkbox" class="photo-checkbox" onclick="handleCheckboxClick(this)" />
+                        <!-- Display the image -->
+                        <div>
+                            <img th:src="@{${photo.imgDataSrc}}" th:alt="${photo.type}" class="card-img-top" style="max-width: 50%; max-height: 10%;" />
+                        </div>
+                        <div class="mt-3">
+							<!-- Display title -->
+                       <div class="card">
+        <div class="card-body">
+            <!-- Title -->
+            <h5 class="card-title">Title: <span th:text="${photo.photoExtras.title}"></span></h5>
+            <!-- Price -->
+            <h6 class="card-subtitle mb-2 text-muted">Price: <span th:text="${photo.photoExtras.price}"></span></h6>
+            <!-- Description -->
+            <p class="card-text">Description: <span th:text="${photo.photoExtras.description}"></span></p>
+        </div>
+    </div>
+						</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+            <!-- Modal -->
+            <div id="galleryModal" class="modal fade "  tabindex="-1" role="dialog" aria-labelledby="galleryModalLabel" aria-hidden="true" style="margin-top: 70px;">
+                <div class="modal-dialog" role="document" style="max-width: 500px;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="galleryModalLabel"><span id="header_modal">Create </span>Gallery</h5>
+                            <button onclick="closeModal()" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+							<!--<img id="uploadedImage" src="" alt="Uploaded Image" style="max-width: 100%; display: none;">-->
+                            <form id="business_form" enctype="multipart/form-data">
+                                <div class="row">
+                                    <div class="col-lg-6" >
+                                        <div class="form-group">
+                                            <label class="control-label">Title</label>
+                                            <input type="text" id="title" class="form-control input-sm" name="title">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="control-label">Price</label>
+                                            <input type="text" id="price" class="form-control input-sm" name="price">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+									<div class="col-lg-6" id="count_of_code_id">
+										<div class="form-group">
+											<label class="control-label">Category</label>
+											<select id="category" class="form-control input-sm" title="Select Category">
+												<option value="">Select Category</option>
+												<option th:each="category : ${T(com.SCM.photo.Photo.PhotoType).values()}"
+													th:text = "${category}" th:value = "${category}">
+												</option>
+											</select>
+										</div>
+									</div>
+								</div>
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="form-group">
+                                            <label class="control-label">Description</label>
+                                            <textarea type="text" id="description" class="form-control input-sm" name="description"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+									<div class="col-lg-12">
+										<div class="form-group text-center">
+											<span class="dragBox" >
+											  	Darg and Drop image here
+												<input type="file" onChange="dragNdrop(event)" accept="image/*" name="imageFile"  ondragover="drag()" ondrop="drop()" id="uploadFile"  />
+												<input type="hidden" id="croppedImageData" name="croppedImageData" style="display: none;" />
+											</span>
+										</div>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-lg-12">
+										<div class="form-group text-center">
+											<div id="preview"></div>
+										</div>
+									</div>
+								</div>
+                                <!--./row-->
+                                <div class="row"> 
+                                    <div class="col-lg-12" style="margin-bottom: 50px;">
+                                        <div class="form-group text-right mb-4" >
+                                            <button type="button" class="btn btn-sm btn-default" onclick="closeModal()">Close</button>&nbsp;
+                                            <button id="btn_submit" type="button" class="btn btn-sm btn-primary" onClick="save()">Save</button>
+                                        </div>	
+                                        <div id="message_status" class="alert alert-info text-center hidden mb-4"></div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+<!--Hidden IDs-->
+<div>
+	<input type="hidden" id="business" th:value="${business.getId()}"></input>
+</div>
+ 
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+ <!-- Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Bootstrap Select JS (Optional for better dropdown) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
+
+
+<!-- Bootstrap JS (Optional) Important !!!--> 
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTables Bootstrap 4 Integration JS -->
+<!-- <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js"></script> -->
+
+<!-- DataTables Select JS -->
+<script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.standalone.min.css" integrity="sha512-D5/oUZrMTZE/y4ldsD6UOeuPR4lwjLnfNMWkjC0pffPTCVlqzcHTNvkn3dhL7C0gYifHQJAIrRTASbMvLmpEug==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css" integrity="sha512-34s5cpvaNG3BknEWSuOncX28vz97bRI59UnVtEEpFX536A7BtZSJHsDyFoCl8S7Dt2TPzcrCEoHBGeM4SUBDBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.min.css" integrity="sha512-aQb0/doxDGrw/OC7drNaJQkIKFu6eSWnVMAwPN64p6sZKeJ4QCDYL42Rumw2ZtL8DB9f66q4CnLIUnAw28dEbg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.standalone.min.css" integrity="sha512-t+00JqxGbnKSfg/4We7ulJjd3fGJWsleNNBSXRk9/3417ojFqSmkBfAJ/3+zpTFfGNZyKxPVGwWvaRuGdtpEEA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" type="text/css" href="https://www.jqueryscript.net/demo/Bootstrap-4-Dropdown-Select-Plugin-jQuery/dist/css/bootstrap-select.css" />
+
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4Agz1N6lVtPzrlfJ8zUhB6e7I4Dd10T1z5Yr3EJ4eG25nQm82y5C" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="https://www.jqueryscript.net/demo/Bootstrap-4-Dropdown-Select-Plugin-jQuery/dist/js/bootstrap-select.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+
+<!-- Your custom scripts -->
+<script src="/js/script.js"></script> 
+<script src="/js/side.js"></script>
+<script src="/js/admin2.js"></script>
+<script src="/js/admin2_min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+
+<script type="text/javascript" th:inline="javascript">
+	
+	 document.getElementById('merchant').addEventListener('change', function() {
+            const merchantId = this.value;
+            const businessId = document.getElementById('business').value;
+            let url;
+            if (merchantId) {
+                url = `/user/dashboard/gallery?businessID=${businessId}&merchantID=${merchantId}`;
+            } else {
+                url = `/user/dashboard/gallery?businessID=${businessId}`;
+            }
+            window.location.href = url;
+        });
+	
+	
+	/*<![CDATA[*/
+    function handleCheckboxClick(clickedCheckbox) {
+        // Get all checkboxes
+        var checkboxes = document.querySelectorAll('.photo-checkbox');
+        
+        // Uncheck all checkboxes except the one clicked
+        checkboxes.forEach(function(checkbox) {
+            if (checkbox !== clickedCheckbox) {
+                checkbox.checked = false;
+            }
+        });
+    }
+
+    /*]]>*/
+
+function dragNdrop(event) {
+    var file = event.target.files[0];
+    var reader = new FileReader();
+
+    reader.onload = function(e) {
+        var preview = document.getElementById("preview");
+        var previewImg = document.createElement("img");
+        previewImg.setAttribute("src", e.target.result);
+        previewImg.style.width = "100%"; // Set the width to 100% to make it responsive
+        previewImg.style.height = "auto"; // Allow the height to adjust automatically
+        preview.innerHTML = "";
+        preview.appendChild(previewImg);
+
+        // Set base64 string in a hidden input field
+        document.getElementById('croppedImageData').value = e.target.result;
+    }
+
+    reader.readAsDataURL(file); // Read the file as base64 data
+}
+
+
+function drag() {
+    document.getElementById('uploadFile').parentNode.className = 'draging dragBox'; 
+}
+
+function drop() {
+    document.getElementById('uploadFile').parentNode.className = 'dragBox';
+}
+
+$(document).ready(function () {
+	setupgalleryTable();  
+	setupDatePicker()
+});
+
+function setupgalleryTable() {
+        var url = '/api/businessPageWise';
+        var parm = undefined;
+        if (location.href.indexOf('?') > 0) {
+            parm = location.href.substring(location.href.indexOf('?'), location.href.length);
+            url += parm;
+        }
+
+        var name = "galleryTable";
+        var columns = setUpColumns();
+        var columnDefs = [{
+                orderable: false,
+                className: 'select-checkbox',
+                targets: 0,
+            },
+            {
+                orderable: true,
+                targets: [0],
+                orderSequence: ["desc", "asc",]
+            }
+        ];
+
+        var select = {
+            style: 'single',
+            selector: 'td:first-child'
+        };
+
+        tableInit(name, columns, [0, "desc"], columnDefs, select, url);
+    }
+
+function setUpColumns() {
+    var columns = [
+        { data: "id", defaultContent: "","render": function (data, type, row) {
+             return "<input class = 'hidden' class='dt-checkboxes' value = " + data + ">";
+         } },  // Placeholder for checkbox column
+        { 
+            data: "name", 
+            render: function(data, type, row) {
+                return data ? data : '';
+            } 
+        },
+        { 
+            data: "fullName", 
+            render: function(data, type, row) {
+                return data ? data : '';
+            } 
+        },
+        { 
+            data: "address", 
+            render: function(data, type, row) {
+                return data ? data : '';
+            } 
+        },
+        { 
+            data: "description", 
+            render: function(data, type, row) {
+                return data ? data : '';
+            } 
+        },
+        { 
+            data: "creationTime", 
+            render: function(data, type, row) {
+                return data ? data : '';
+            } 
+        }
+    ];
+    return columns;
+}
+
+function showCreateForm(){
+	$('#galleryModal').modal('show');
+};
+
+
+function save() {
+	
+	var businessID = $('#business').val();
+	var merchantID = $('#merchant').val(); // Retrieve the selected merchant ID
+
+    $('#title').closest('.form-group').removeClass('has-error');
+    $('#price').closest('.form-group').removeClass('has-error');
+    $('#description').closest('.form-group').removeClass('has-error');
+    
+    if (!$('#title').val()) {
+        $('#title').closest('.form-group').addClass('has-error');
+        return false;
+    }
+    
+    if (!$('#price').val()) {
+        $('#price').closest('.form-group').addClass('has-error');
+        return false;
+    }
+    
+    if (!$('#description').val()) {
+        $('#description').closest('.form-group').addClass('has-error');
+        return false;
+    }
+    
+     // Check if an image is selected
+    if (!$('#uploadFile').val()) {
+        statusAlertWidget('#message_status', 'alert alert-danger', 'Please select an image to upload.');
+        return false;
+    }
+   
+    statusAlertWidget('#message_status', 'alert-progress', null);
+    
+    var url = '/api/gallery';
+    var params = '';
+    
+    var photoId = null;
+    var checkedCheckbox = document.querySelector('.photo-checkbox:checked');
+    if (checkedCheckbox) {
+        photoId = checkedCheckbox.parentNode.querySelector('.photo-id').value;
+    }
+
+    if (photoId) {
+        params = '?id=' + photoId; // Correct query parameter formatting
+    }
+    
+    if (merchantID) {
+	    if (params) {
+	        params += '&merchantID=' + merchantID; 
+	    } else {
+	        params = '?merchantID=' + merchantID; // Start the parameter string if it's empty
+	    }
+	}
+
+	if (businessID) {
+	    if (params) {   
+	        params += '&businessID=' + businessID; 
+	    } else {
+	        params = '?businessID=' + businessID; // Start the parameter string if it's empty
+	    }
+	}
+    
+    url += params;
+    
+    console.log('url : ' + url);
+    
+    var galleryData = {
+        'title'      : $('#title').val(),
+        'price'      : $('#price').val(),
+        'description': $('#description').val(),
+        'type'       : $('#category').val() ? $('#category').val() : undefined,
+       	'imgDataSrc': $('#croppedImageData').val(), // Get the base64 string from the hidden input field
+    };
+    
+    galleryData['photoExtras'] = {
+				'title' : $('#title').val() ? $('#title').val() : undefined,
+				'price' : $('#price').val() ? $('#price').val() : undefined,
+				'description' : $('#description').val() ? $('#description').val() : undefined,
+			}
+    
+    console.log('data', JSON.stringify(galleryData));
+    
+    $.ajax({
+        headers : {
+            'Content-Type' : 'application/json'
+        },
+        data    : JSON.stringify(galleryData),
+        timeout : 60000,
+        type    : 'POST',
+       	url     : url,
+        beforeSend : function() {
+            com_disableClick('btn_submit');
+        },
+    }).done(function(data, textStatus, jqXHR) {
+        statusAlertWidget('#message_status', 'alert alert-success', 'Successfully Submitted...');
+        // Dynamically update the image source after successful upload
+        //$('#uploadedImage').attr('src', galleryData.imgDataSrc);
+        //$('#uploadedImage').show(); // Show the uploaded image
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        if (jqXHR && jqXHR.responseText) {
+            statusAlertWidget('#message_status', 'alert alert-danger', 'Failed : ' + jqXHR.responseText);
+            console.log("jqXHR.responseText ", jqXHR.responseText);
+        } else {
+            statusAlertWidget('#message_status', 'alert alert-danger', 'Failed to Save');
+        }
+    });
+}
+
+
+function editSelectedImage(){
+	
+	statusAlert(null,null);
+	
+	var checkedCheckbox = document.querySelector('.photo-checkbox:checked');
+        
+        // If a checkbox is checked, find the corresponding photo ID and show an alert
+        if (checkedCheckbox) {
+            photoId = checkedCheckbox.parentNode.querySelector('.photo-id').value;
+            initModal(photoId);
+           // alert('Editing photo with ID: ' + photoId);
+        } else {
+            //alert('Please select a photo to edit.');
+            statusAlert('alert-danger','No Gallery Selected');
+        	return;
+        }
+}
+
+function initModal(id) {
+    statusAlert('alert-progress', 'Please wait....');
+    
+    var url = "/api/gallery/photo?id=" + id;
+    
+    console.log('url..........', url);
+    
+    $.get(url, function(data) {
+        statusAlert(null, null);
+       
+        $('#galleryModal').modal('show');
+        
+        var extras = data['photoExtras'];
+			
+			if(extras){
+				// Add on details
+				if(extras['title'])
+					$('#title').val(extras['title']);
+					
+				if(extras['price'])
+					$('#price').val(extras['price']);
+					
+				if(extras['description'])
+					$('#description').val(extras['description']);
+			}
+        
+        $('#category').val(data['type'])
+    }).fail(function(error) {
+        statusAlert('alert-danger', 'Failed to read Business');
+    });
+}
+
+function deleteData(){
+	
+	statusAlert('alert-progress',null);
+	var row = readTableData('#galleryTable');
+	if(row.length == 0){
+		statusAlert('alert-danger','No Business Selected');
+		return;
+	}
+	$.get('/api/business/delete?id=' + row[0],
+		function(data){
+			statusAlert(null,null);
+			location.reload();
+		}).fail(function(){
+			statusAlert('alert-danger','Failed to deleted');
+		});
+}
+
+function setupDatePicker(){
+    var datePickerOptions = {
+        format: 'yyyy-mm-dd',
+        autoclose: true
+    };
+    $('#date_picker_start').datepicker(datePickerOptions);
+    $('#date_picker_end').datepicker(datePickerOptions);
+}
+
+function filter(){
+	params = "";
+	var url = '/user/dashboard/business';
+	var filterFields = [
+		['#start_date','startDate'],['#end_date','endDate'],
+		['#name','name'],
+		['#address','address'],
+	    ]
+	com_invokeUrlWithParms(url,filterFields,'galleryTable');
+}
+
+
+function closeModal() {
+    location.reload();
+}
+
+
+</script>
+</body>
+</html>

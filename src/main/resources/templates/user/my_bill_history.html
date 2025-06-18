@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org" th:fragment="parent(content,title,script)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport meta tag -->
+
+<head>
+    <!--<title data-th-text="${user != null && user.getFirstName() != null ? user.getFirstName() : ''}">Profile Page</title>-->
+    <title data-th-text="${customer != null ? (customer.getFirstName() != null ? customer.getFirstName() : (customer.getMobileNumber() != null ? customer.getMobileNumber() : 'Profile Page')) : 'Profile Page'}">Profile Page</title>
+
+   <!-- Bootstrap Datepicker CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
+    <!-- DataTables Bootstrap 4 Integration CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
+
+    <!-- DataTables Select CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+    
+    <!-- Common CSS -->
+   <link rel="stylesheet" th:href="@{/css/common.css}">
+   <!-- Font Awesome -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+    <link rel="stylesheet" th:href="@{/css/sidebar.scss}">
+    <link rel="stylesheet" th:href="@{/css/min.css}">
+    <link rel="stylesheet" th:href="@{/css/admin2.css}">
+	 <style>
+     	.centered-content {
+		    padding-left: 15px;  /* default padding for mobile devices */
+		    padding-right: 15px; /* default padding for mobile devices */
+		}
+
+		@media (min-width: 1200px) {
+		    .centered-content {
+		        padding-left: 400px; /* increased padding for larger screens */
+		        padding-right: 400px; /* increased padding for larger screens */
+		    }
+		}
+		
+		
+		/*#rewards_table {
+            margin-bottom: 0px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .bill-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bill-body {
+            padding: 15px;
+        }
+        .bill-footer {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+            text-align: right;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .item-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .item-details {
+            font-size: 14px;
+        }
+        .total-amount {
+            font-size: 16px;
+            font-weight: bold;
+            color: #007bff;
+        } */
+        
+        .alert-success {
+    background-color: lightgreen;
+    color: darkgreen;
+}
+
+.alert-danger {
+    background-color: lightcoral;
+    color: darkred;
+}
+
+.hidden {
+    display: none;
+}
+
+
+
+ body {
+            background-color: #f4f4f4;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .history-header span {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .history-header .btn {
+            background-color: #fff;
+            color: #007bff;
+            border: none;
+        }
+        .history-header .btn:hover {
+            background-color: #e2e6ea;
+        }
+        .history-body {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .history-footer {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-footer span {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .hidden {
+            display: none;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .badge {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+        }
+		
+    </style>
+</head>
+
+<body>
+
+   <div th:replace="~{user/my_abb_navbar :: my_app}"></div> 
+     
+	<!--<div class="container-fluid" style="margin-top: 50px;">
+	    <div class="row">
+	        <div class="col-xl-12 col-lg-7 centered-content mx-auto">
+	           <div class="container mt-5">
+        <div id="rewards_table">
+            <div class="bill-header">
+				<span>History</span>
+                <div>
+                    <button type="button" class="btn btn-light btn-sm mr-2" onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i> Go Back
+                    </button>
+                    
+                </div>
+			</div>
+            <div class="bill-body">
+               
+				<table width="100%" id="history_table" style="margin-bottom: 0px;">
+					<thead>
+						<tr>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="odd gradeX" th:each="car : ${cartItem}">
+							<td>
+								<div>
+									<div style="display: flex;justify-content: space-between;margin-bottom: 10px;">
+										<div class="col-xs-6">
+											<div style="font-size: 14px;">
+												<span th:text="${car.photoMerchant.photoExtras.title}">Example Item</span>
+											</div>
+										</div>
+										<div class="col-xs-6 text-right">
+											<div class="text-muted">
+												<span th:text="${car.photoMerchant.type}">Example Category</span>
+											</div>
+											<div title="Download" >
+												<a href="#">
+													<span class="fa fa-user" style="font-size: 14px;">C</span>
+												</a>
+											</div>
+										</div>
+									</div>
+									<div style="display: flex;justify-content: space-between;">
+										<div class="col-xs-6">
+											
+											<div class="badge badge-success" >
+												<div class="item-details">
+                                                <span>Quantity: </span>
+                                                <span th:text="${car.quantity}">10</span>
+                                                <span> * Price: </span>
+                                                <span th:text="${car.price}">$20.00</span>
+                                            </div>
+											</div>
+										</div>
+										<div class="col-xs-6 text-right"> 
+											<div class="text-muted small" style="margin-top: 5px">
+												<span th:text="${car.amount}" class="total-amount">$200.00</span>
+											</div>
+										</div>
+									</div>
+									<hr style="margin-top: 10px;margin-bottom: 10px; border-color: #ddd;">
+								</div>
+								
+								
+							</td>
+						</tr>
+					</tbody>
+				</table>
+												
+            </div>
+            <div class="bill-footer">
+				<input id="shortLink" type="hidden" th:value="${shortLink}">
+				<input id="staffLink" type="hidden" th:value="${staffLink}">
+                Grand Total: <span th:text="${totalAmount}">$1000.00</span>  Replace with dynamic value 
+            </div>
+            <div  id="message_status" class="alert hidden mt-3"></div>
+        </div>
+    </div>
+	        </div>
+	    </div>
+	</div>-->
+
+
+<div class="container-fluid" style="margin-top: 50px;">
+    <div class="row">
+        <div class="col-xl-5 col-lg-10 mx-auto mt-5 mb-4">
+            <div class="history-header">
+                <span>Purchase History</span>
+                <button type="button" class="btn btn-light btn-sm" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i> Go Back
+                </button>
+            </div>
+            <div class="history-body">
+                <table id="history_table" class="table table-striped table-bordered" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Item Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="car : ${cartItem}">
+                            <td>
+                                <div class="item-details">
+                                    <div>
+                                        <span th:text="${car.photoMerchant.photoExtras.title}">Example Item</span><br>
+                                        <span class="text-muted small" th:text="${car.photoMerchant.type}">Example Category</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="badge badge-success">
+                                            <span>Quantity: </span>
+                                            <span th:text="${car.quantity}">10</span>
+                                            <span> * Price: </span>
+                                            <span th:text="${car.price}">$20.00</span>
+                                        </span><br>
+                                        <span class="text-muted small mt-1 total-amount" th:text="${car.amount}" >$200.00</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="history-footer" style="margin-bottom: 30px;">
+                <span>Grand Total:</span>
+                <span th:text="${totalAmount}">$1000.00</span> <!-- Replace with dynamic value -->
+            </div>
+            <div id="message_status" class="alert hidden mt-3"></div>
+        </div>
+    </div>
+</div>
+
+<footer style="margin-bottom: 100px;" th:replace="~{user/my_footer :: footer}"></footer>
+
+<!-- ./content container-->
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!-- Bootstrap JS (Optional) Important !!!--> 
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTables Bootstrap 4 Integration JS -->
+<!-- <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js"></script> -->
+
+<!-- DataTables Select JS -->
+<script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.standalone.min.css" integrity="sha512-D5/oUZrMTZE/y4ldsD6UOeuPR4lwjLnfNMWkjC0pffPTCVlqzcHTNvkn3dhL7C0gYifHQJAIrRTASbMvLmpEug==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css" integrity="sha512-34s5cpvaNG3BknEWSuOncX28vz97bRI59UnVtEEpFX536A7BtZSJHsDyFoCl8S7Dt2TPzcrCEoHBGeM4SUBDBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.min.css" integrity="sha512-aQb0/doxDGrw/OC7drNaJQkIKFu6eSWnVMAwPN64p6sZKeJ4QCDYL42Rumw2ZtL8DB9f66q4CnLIUnAw28dEbg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.standalone.min.css" integrity="sha512-t+00JqxGbnKSfg/4We7ulJjd3fGJWsleNNBSXRk9/3417ojFqSmkBfAJ/3+zpTFfGNZyKxPVGwWvaRuGdtpEEA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Your custom scripts -->
+<script src="/js/script.js"></script> 
+<script src="/js/side.js"></script>
+<script src="/js/admin2.js"></script>
+<script src="/js/admin2_min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+
+<script type="text/javascript">
+	
+	$(document).ready(function() {
+        $('#history_table').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": false, // Hides the search field
+            "responsive": true,
+            "pageLength": 5, // Set the page length to 5
+            
+        });
+    });
+    
+     function goBack() {
+        window.history.back();
+    }
+    
+</script>
+</body>
+</html>

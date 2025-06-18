@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org" th:fragment="parent(content,title,script)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport meta tag -->
+
+<head>
+    <!--<title data-th-text="${user != null && user.getFirstName() != null ? user.getFirstName() : ''}">Profile Page</title>-->
+    <title data-th-text="${customer != null ? (customer.getFirstName() != null ? customer.getFirstName() : (customer.getMobileNumber() != null ? customer.getMobileNumber() : 'Profile Page')) : 'Profile Page'}">Profile Page</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Other head elements -->
+
+    <!-- Bootstrap Datepicker CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+
+    <!-- DataTables CSS -->  
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
+    <!-- DataTables Bootstrap 4 Integration CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
+
+    <!-- DataTables Select CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+    
+    <!-- Common CSS -->
+   <link rel="stylesheet" th:href="@{/css/common.css}">
+   <!-- Font Awesome -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+    
+    <!--Tags Input css-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css">
+    
+    <!-- Custom CSS -->
+  	<link rel="stylesheet" th:href="@{/css/custom.css}">
+    <link rel="stylesheet" th:href="@{/css/sidebar.scss}">
+    <link rel="stylesheet" th:href="@{/css/min.css}">
+    <link rel="stylesheet" th:href="@{/css/admin2.css}">
+	 <style>
+     	.centered-content {
+		    padding-left: 15px;  /* default padding for mobile devices */
+		    padding-right: 15px; /* default padding for mobile devices */
+		}
+
+		@media (min-width: 1200px) {
+		    .centered-content {
+		        padding-left: 400px; /* increased padding for larger screens */
+		        padding-right: 400px; /* increased padding for larger screens */
+		    }
+		}
+		
+	.zoom-effect {
+    overflow: hidden;
+    position: relative;
+    display: inline-block;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow effect */
+    border-radius: 8px; /* Add border radius for rounded corners */
+    border: 1px solid #ddd; /* Add border */
+}
+
+.zoom-effect img {
+    transition: transform 0.3s ease;
+    display: block; /* Ensure the image fills its container */
+    width: 100%; /* Ensure the image fills its container */
+    height: auto; /* Allow the image to scale proportionally */
+}
+
+.zoom-effect:hover img {
+    transform: scale(1.1); /* Increase the scale to 1.1 when hovered */
+}
+
+.roboto-font {
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    .alert-success {
+    background-color: lightgreen;
+    color: darkgreen;
+}
+
+.alert-danger {
+    background-color: lightcoral;
+    color: darkred;
+}
+
+.hidden {
+    display: none;
+}
+
+.pull-right {
+            float: right;
+        }
+        
+        .zoom-effect {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .zoom-effect img.zoom-img {
+            transition: transform 0.5s ease;
+        }
+
+        .zoom-effect:hover img.zoom-img {
+            transform: scale(1.1);
+        }
+
+        .centered-content {
+            text-align: center;
+        }
+
+        .card {
+            border-radius: 10px;
+        }
+
+        .btn-number {
+            background-color: #f8f9fa;
+        }
+
+        .btn-number:hover {
+            background-color: #e2e6ea;
+        }
+
+        .price-text {
+            color: #ff5722;
+            font-weight: bold;
+        }
+
+        .title-text {
+            color: #3f51b5;
+            font-weight: bold;
+        }
+
+        .description-text {
+            color: #757575;
+        }
+
+        .input-number {
+            max-width: 60px;
+            text-align: center;
+        }
+
+        .btn-warning {
+            background-color: #ff9800;
+            border-color: #ff9800;
+        }
+
+        .btn-warning:hover {
+            background-color: #fb8c00;
+            border-color: #fb8c00;
+        }
+
+        .btn-info {
+            background-color: #03a9f4;
+            border-color: #03a9f4;
+        }
+
+        .btn-info:hover {
+            background-color: #039be5;
+            border-color: #039be5;
+        }
+
+        .alert-info {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+         .new-div-class {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px; /* Adjust the radius value as needed */
+    /* margin-top: 10px;*/
+}
+
+.margin-top-100 {
+    margin-top: 100px;
+}
+
+
+/* Change the background color and text color for tags */
+
+
+/* Optionally, change the background color for selected tags */
+.bootstrap-tagsinput .tag.label.label-info {
+    background-color: #5bc0de; /* Custom background color */
+    color: white; /* Custom text color */
+    border-radius: 4px; /* Custom border radius */
+    padding: 4px 8px; /* Custom padding */
+    margin-right: auto; /* Add spacing between tags */
+    margin-top:5px;
+}
+
+.bootstrap-tagsinput {
+    display: flex; /* Use flexbox layout for tags */
+    flex-wrap: wrap; /* Allow tags to wrap to the next line */
+    align-items: center; /* Align tags vertically center */
+}
+
+
+/* Hide the original input field */
+#selected_contacts_input {
+    display: none !important;
+}
+
+/* Adjust the container styles to accommodate the tags input */
+#tags_input_field {
+    margin: 10px;
+    width: 100%;
+}
+
+.d-flex_ {
+    display: flex;
+    justify-content: space-between;
+}
+
+.d-flex_ button {
+    flex: 1; /* This makes sure each button takes an equal amount of space */
+    margin: 0 2px; /* Adjust the margin as needed */
+}
+
+/* Optional: Adjust the button size and alignment */
+.btn {
+    width: auto;
+    text-align: center;
+}
+.star-rating {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.star-rating .fa-star {
+    font-size: 1rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.star-rating .fa-star.checked {
+    color: #ffcc00;
+}
+
+.star-rating .fa-star:hover,
+.star-rating .fa-star:hover ~ .fa-star {
+    color: #ffcc00;
+}
+
+
+.review-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: #000; /* Set the color as desired */
+    font-weight: bold; /* Set the font weight as desired */
+}
+
+.review-link i {
+    margin-right: 5px; /* Adjust the margin between the icon and the text */
+}
+
+.hovered {
+    color: gold; /* Change the color to indicate hovering */
+}
+
+.btn-review {
+    /* Add custom styling to the button */
+    background-color: #FFD700; /* Golden yellow background color */
+    color: #fff; /* White text color */
+    border: none; /* Remove button border */
+    padding: 10px 20px; /* Add padding to the button */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 12px; /* Font size */
+    text-decoration: none; /* Remove default link underline */
+    transition: background-color 0.3s ease; /* Smooth transition effect */
+}
+
+.btn-review:hover {
+    background-color: #FFDF00; /* Lighter shade of yellow on hover */
+}
+
+.custom-textarea {
+        border: 2px solid #ccc;
+         width: 100%; /* Set width to 100% */
+        border-radius: 5px;
+        padding: 10px;
+        font-size: 16px;
+        resize: vertical; /* Allow vertical resizing */
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Add a shadow effect */
+    }
+
+    .custom-textarea:focus {
+        outline: none; /* Remove outline on focus */
+        border-color: #007bff; /* Change border color on focus */
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Change shadow color on focus */
+    }
+    
+     #charCount {
+            text-align: right;
+        }
+
+		
+    </style>
+</head>
+
+<body>
+
+   <div th:replace="~{user/my_abb_navbar :: my_app}"></div> 
+   
+ 	<div class="container-fluid" style="margin-top: 100px;" id="pick_contact">
+	  <div class="row">
+	    <div class="col-xl-12 col-lg-7 centered-content mx-auto">
+	      <div class="card shadow" id="dynamicCard">
+	        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+	          <div class="row">
+	            <div class="col">
+	              <h6 class="m-0 font-weight-bold text-primary">Refer</h6>
+	            </div>
+	          </div>
+	        </div>
+	        <div class="card-body">
+	          <div class="row m-2">
+	            <div class="d-flex col">
+	              <button onclick="getContacts()" class="btn btn-default btn-sm" title="Share" style="border: 1px solid #ccc; border-radius: 5px;">
+	                <i class="fa fa-share"></i> Share
+	              </button>&nbsp;&nbsp;
+	              <small id="contact_count_span" >(0)</small>
+	            </div>
+	          </div>
+	          <div class="row justify-content-center">
+	            <div class="d-flex col justify-content-center">
+	              <form id="contactForm" role="form">
+	                <div style="margin: 10px;" id="tags_input_field">
+	                 <input class="form-control d-flex" style="margin: 10px; width: 100%; display: none;" type="text" id="selected_contacts_input" readonly>
+	                  <button style="margin-top: 10px;" id="btn_submit" type="button" onClick="saveContacts()" class="btn btn-sm btn-primary">Submit</button>
+	                  <small><i id="loading_spinner" class="fas fa-spinner fa-spin" style="display: none;"></i></small>
+	                  <div id="contact_status_" class="small alert alert-success alert-dismissable alert-info text-center hidden mt-1"></div>
+	                </div>
+	              </form>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	<div class="container-fluid" id="containerDiv"> <!--style="margin-top: 100px;"-->
+	    <div class="row">
+	        <div class="col-xl-12 col-lg-7 centered-content mx-auto">
+				
+					 <div class="d-flex justify-content-start m-0 font-weight-bold" style="padding: 10px;">
+		                 <button type="button" class="btn btn-primary small" onclick="goBack()">
+                    		<i class="fas fa-arrow-left"></i> Go Back
+                		</button>
+		            </div>
+				
+	            <div class="card shadow mb-4" id="dynamicCard">
+	                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+	                    <h6 class="m-0 font-weight-bold text-primary">Merchants <small> Stores</small></h6>
+	                    
+	                    <form th:action="@{/access/{shortLink}/{staffLink}(shortLink=${shortLink}, staffLink=${staffLink})}" method="get" class="form-inline">
+	                        <!--<input class="form-control mr-sm-2" type="search" placeholder="Search by Title" aria-label="Search" name="search" th:value="${search}">
+	                        <button class="btn btn-outline-success my-2 my-sm-0" type="button">Search</button>-->
+	                    </form>
+	                </div>
+	                <div class="card-body">
+	                     <div th:if="${groupedCartItems == null or groupedCartItems.isEmpty()}">
+				            <p>No images found.</p>
+				        </div>
+	                    
+	                    
+	                    <div th:if="${groupedCartItems != null}" th:each="entry : ${groupedCartItems}">
+            <h6 th:text="${entry.key}"></h6>
+            <div class="row">
+                <div th:each="cartItem : ${entry.value}" class="mb-4">
+                    <input th:id="'photoId_' + ${cartItem.photoMerchant.id}" type="hidden" th:value="${cartItem.photoMerchant.id}">
+                    <div class="text-center border rounded p-3">
+                        <div class="zoom-effect">
+                            <img th:src="@{${cartItem.photoMerchant.imgDataSrc}}" th:alt="${cartItem.photoMerchant.title}" class="img-fluid zoom-img" style="max-height: 500px;">
+                        </div>
+                        <div class="mt-2">
+                            <div class="col roboto-font">
+                                <span class="title-text" th:text="${cartItem.photoMerchant.photoExtras.title}">Title</span>
+                            </div>
+                            <div class="col text-right roboto-font">
+                                <span class="price-text" th:text="'Rs. ' + ${cartItem.photoMerchant.photoExtras.price}">Price</span>
+                            </div>
+                        </div>
+                       <!-- <div>
+                            <textarea id="reviewText" class="custom-textarea" rows="2" cols="" placeholder="Enter your text here" style="width: 100%;"></textarea>
+                        </div>-->
+                        <div>
+						    <textarea id="reviewText" th:text="${cartItem.reviewText}" class="custom-textarea" rows="2" cols="" placeholder="Enter your text here" style="width: 100%;"></textarea>
+						    <div id="charCount" class="text-right">0/200</div>
+						</div>
+
+                        <div class="d-flex text-left roboto-font mt-2" >
+                            <div class="star-rating" th:attr="data-photo-id=${cartItem.photoMerchant.id}">
+                                <i class="fas fa-star" th:classappend="${cartItem.rating >= 1 ? 'text-warning' : ''}" data-value="1"></i>
+                                <i class="fas fa-star" th:classappend="${cartItem.rating >= 2 ? 'text-warning' : ''}" data-value="2"></i>
+                                <i class="fas fa-star" th:classappend="${cartItem.rating >= 3 ? 'text-warning' : ''}" data-value="3"></i>
+                                <i class="fas fa-star" th:classappend="${cartItem.rating >= 4 ? 'text-warning' : ''}" data-value="4"></i>
+                                <i class="fas fa-star" th:classappend="${cartItem.rating >= 5 ? 'text-warning' : ''}" data-value="5"></i>
+                            </div>
+                        </div>
+                        <div class="d-flex mt-1">
+                            <div th:id="'message_status_' + ${cartItem.photoMerchant.id}" class="alert alert-info text-center hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+	                    
+	                    
+	                    
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	
+	<!-- Hidden Ids-->
+	<div class="row">
+		<input id="shortLinkId" type="hidden" th:value="${shortLink}">
+		<input id="staffLinkId" type="hidden" th:value="${staffLink}">
+	</div>
+	
+	<!-- Include footer fragment -->
+   
+	<footer style="margin-bottom: 100px;" th:replace="~{user/my_footer :: footer}"></footer>
+	
+
+ 
+<!-- ./content container-->
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!-- Bootstrap JS (Optional) Important !!!--> 
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTables Bootstrap 4 Integration JS -->
+<!-- <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js"></script> -->
+
+<!-- DataTables Select JS -->
+<script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.standalone.min.css" integrity="sha512-D5/oUZrMTZE/y4ldsD6UOeuPR4lwjLnfNMWkjC0pffPTCVlqzcHTNvkn3dhL7C0gYifHQJAIrRTASbMvLmpEug==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css" integrity="sha512-34s5cpvaNG3BknEWSuOncX28vz97bRI59UnVtEEpFX536A7BtZSJHsDyFoCl8S7Dt2TPzcrCEoHBGeM4SUBDBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.min.css" integrity="sha512-aQb0/doxDGrw/OC7drNaJQkIKFu6eSWnVMAwPN64p6sZKeJ4QCDYL42Rumw2ZtL8DB9f66q4CnLIUnAw28dEbg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.standalone.min.css" integrity="sha512-t+00JqxGbnKSfg/4We7ulJjd3fGJWsleNNBSXRk9/3417ojFqSmkBfAJ/3+zpTFfGNZyKxPVGwWvaRuGdtpEEA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Your custom scripts -->
+<script src="/js/script.js"></script> 
+<script src="/js/side.js"></script>
+<script src="/js/admin2.js"></script>
+<script src="/js/admin2_min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+
+<!-- tags input -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+
+<script type="text/javascript" th:inline="javascript">
+	
+	
+	document.addEventListener("DOMContentLoaded", function() {
+            const reviewText = document.getElementById('reviewText');
+            const charCount = document.getElementById('charCount');
+            const maxLength = 200;
+
+            console.log("reviewText: ", reviewText);
+            console.log("charCount: ", charCount);
+
+            // Set the initial character count based on existing data
+            const initialLength = reviewText.value.length;
+            charCount.textContent = `${initialLength}/${maxLength}`;
+
+            reviewText.addEventListener('input', function() {
+                const currentLength = reviewText.value.length;
+
+                if (currentLength > maxLength) {
+                    reviewText.value = reviewText.value.substring(0, maxLength);
+                }
+
+                charCount.textContent = `${reviewText.value.length}/${maxLength}`;
+            });
+        });
+	
+	
+	
+	document.addEventListener("DOMContentLoaded", function() {
+    const starContainers = document.querySelectorAll('.star-rating');
+
+    starContainers.forEach(container => {
+        const stars = container.querySelectorAll('.fa-star');
+        let selectedRating = parseInt(container.getAttribute('data-initial-rating')); // Get initial rating from data attribute
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                const value = parseInt(star.getAttribute('data-value'));
+                selectedRating = value; // Update selected rating
+                // Remove checked class from all stars
+                stars.forEach(s => s.classList.remove('checked'));
+                // Add checked class to the stars up to the selected star
+                stars.forEach(s => {
+                    if (parseInt(s.getAttribute('data-value')) <= selectedRating) {
+                        s.classList.add('checked');
+                    }
+                });
+                const shortLink = $('#shortLinkId').val();
+                const staffLink = $('#staffLinkId').val();
+                const reviewText = document.getElementById('reviewText').value; // Get the text from the textarea
+                sendRatingToBackend(container.getAttribute('data-photo-id'), staffLink,shortLink,selectedRating,reviewText );
+            });
+
+            // Set the stars as checked up to the selected rating
+            if (parseInt(star.getAttribute('data-value')) <= selectedRating) {
+                star.classList.add('checked');
+            }
+        });
+    });
+});
+	
+
+function sendRatingToBackend(photoId, staffLink,shortLink, selectedRating,reviewText) {
+    statusAlertWidget('#message_status', 'alert-progress', null);
+
+    // Construct URL with query parameters
+    var url = '/api/rating';
+    var params = [];
+
+    if (photoId) {
+        params.push('photoId=' + encodeURIComponent(photoId));
+    }
+    if (shortLink) {
+        params.push('shortLink=' + encodeURIComponent(shortLink));
+    }
+    if (staffLink) {
+        params.push('staffLink=' + encodeURIComponent(staffLink));
+    }
+    if (selectedRating) {
+        params.push('selectedRating=' + encodeURIComponent(selectedRating));
+    }
+    
+     if (reviewText) {
+        params.push('reviewText=' + encodeURIComponent(reviewText));
+    }
+
+    if (params.length > 0) {
+        url += '?' + params.join('&');
+    }
+
+    console.log('URL:', url);
+
+    $.ajax({
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        timeout: 60000,
+        type: 'POST',  // Use GET method to send data via URL
+        url: url,
+        beforeSend: function() {
+            com_disableClick('btn_submit');
+        },
+    }).done(function(data, textStatus, jqXHR) {
+        // Assuming you have a photoId variable or some way to identify the specific photo
+	    //var photoId = container.getAttribute('data-photo-id'); // Example of how you might get the photo ID
+	    //console.log(" >>>>>>>>", photoId);
+	    statusAlertWidget('#message_status_' + photoId, 'alert alert-success', 'Rating submitted successfully.');
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+       // Assuming you have a photoId variable or some way to identify the specific photo
+	    //var photoId = $('#photoId').val(); // Example of how you might get the photo ID
+	    if (jqXHR && jqXHR.responseText) {
+	        statusAlertWidget('#message_status_' + photoId, 'alert alert-danger', 'Failed : ' + jqXHR.responseText);
+	    } else {
+	        statusAlertWidget('#message_status_' + photoId, 'alert alert-danger', 'Failed to save rating.');
+	    }
+    });
+}
+
+
+
+	$(document).ready(function () {
+		 $('#selected_contacts_input').tagsinput({
+			 allowDuplicates : true,
+		 });
+	   updateContactCount();
+	   updateStatusAlert();
+	});
+	
+	 const supported = "contacts" in navigator && "ContactsManager" in window;
+	 const containerDiv = document.getElementById("containerDiv");
+
+    if (supported) {
+        document.getElementById("pick_contact").style.display = "block";
+    } else {
+        document.getElementById("pick_contact").style.display = "none";
+        containerDiv.classList.add("margin-top-100");
+        //alert("Sorry, your device doesn't support Contact Picker API. This feature is only available on Android Chrome and Chrome version > 80");
+    }
+	
+  const uniqueMobileNumbers = new Set();
+  const selectedContacts = [];
+  // To keep track of the selected contact count
+  let selectedContactCount = 0;
+
+
+	// Event listener to update the contact count when the input field changes
+	$('#selected_contacts_input').on('itemAdded', function(event) {
+	  updateContactCount();
+	  updateStatusAlert();
+	});
+
+	// Function to removed contact tags
+	$('#selected_contacts_input').on('itemRemoved', function(event) {
+		var removedContactName = event.item;
+		removeSelectedContact(removedContactName);
+		updateContactCount();
+		updateStatusAlert();
+	});
+
+	// Function to remove a selected contact
+	function removeSelectedContact(contactName) {
+		
+		
+	  const index = selectedContacts.findIndex((contact) => contact.name === contactName);
+	  
+	  if (index !== -1) {
+	    const removedContact = selectedContacts.splice(index, 1)[0];
+	
+	    // Remove the contact from the input field
+	    const selectedContactsInput = document.getElementById("selected_contacts_input");
+	    $(selectedContactsInput).tagsinput('remove', contactName);
+	
+		removeMobileNumberFromSet(removedContact.mobile);
+	
+	    updateStatusAlert();
+	    updateContactCount();
+	    
+	    console.log("Removed contact: ", contactName);
+	    console.log("Selected Contacts after removing: ", selectedContacts); // Log the selectedContacts array after removing
+	  }
+	}
+
+	// Function to removed a selected contact from uniqueMobileNumbers set
+	function removeMobileNumberFromSet(mobileNumber) {	
+		if(uniqueMobileNumbers.has(mobileNumber)) {
+			uniqueMobileNumbers.delete(mobileNumber);
+		}
+	}
+
+  async function getContacts() {
+    const props = ["name", "email", "tel"];
+    const opts = { multiple: true };
+
+    try {
+      const contacts = await navigator.contacts.select(props, opts);
+      let contactCount = 0;
+
+      for (const contact of contacts) {
+        if (contactCount >= 10) {
+          break; // Limit reached, skip the rest
+        }
+
+        const contactName = (contact.name && contact.name[0]) || "";
+        const firstName = contactName.split(' ')[0] || "";
+        const lastName = contactName.split(' ')[1] || "";
+        let mobileNumber = (contact.tel[0] || "").replace(/\s/g, "");
+
+        // Remove leading zeros and handle +91 and 1 prefix
+        mobileNumber = mobileNumber.replace(/^(0|\+91|1)/, '');
+
+        if (!contactName || !firstName || containsNumber(contactName) || containsNumber(firstName)) {
+          // Skip the contact if it doesn't meet the criteria
+          continue;
+        }
+
+        const emails = contact.email || [];
+        const email = emails.find(e => e.type === "em") || emails[0];
+
+        // Check if the mobile number is valid
+        if (/^[6789]\d{9}$/.test(mobileNumber)) {
+          // Check if the mobile number is unique
+          if (!uniqueMobileNumbers.has(mobileNumber)) {
+            uniqueMobileNumbers.add(mobileNumber);
+            contactCount++; // Increment the selected contact count
+
+            if (contactName) {
+              const contactDetails = {
+                name: contactName,
+                email: email,
+                mobile: mobileNumber,
+              };
+              addSelectedContact(contactDetails);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      alert(err);
+    }
+  }
+
+  function addSelectedContact(contact) {
+    
+	  if (selectedContacts.length < 10) {
+	    selectedContacts.push(contact);
+	    updateContactsInput();
+	    // Display the name in the field
+	    console.log("Added contact: ", contact);
+	    console.log("Selected Contacts after adding: ", selectedContacts); // Log the selectedContacts array after adding
+	  } else {
+	    console.log("Error.....");
+	  }
+    
+  }
+
+   function updateContactsInput() {
+    // Clear existing tags
+	    $('#selected_contacts_input').tagsinput('removeAll');
+	
+	    // Add a tag for each contact
+	    selectedContacts.forEach(contact => {
+	        $('#selected_contacts_input').tagsinput('add', `${contact.name}`);
+	    });
+	    
+	    updateStatusAlert();
+    	updateContactCount();
+    	//console.log("Added contact: ", contact);
+   		//console.log("Selected Contacts after adding: ", selectedContacts); // Log the selectedContacts array after adding
+	}
+
+	// Function to update status alert
+	function updateStatusAlert() {
+	    const contactStatusAlert = document.getElementById("contact_status_");
+	    if (contactStatusAlert) { // Check if the element exists
+	        if (selectedContacts.length > 10) {
+	            contactStatusAlert.textContent = 'You can select up to 10 contacts.';
+	            contactStatusAlert.classList.remove("hidden");
+	        } else {
+	            contactStatusAlert.textContent = '';
+	            contactStatusAlert.classList.add("hidden");
+	        }
+	    }
+	}
+
+	// Function to update contact count
+	function updateContactCount() {
+	    const contactCountSpan = document.getElementById("contact_count_span");
+	    if (contactCountSpan) { // Check if the element exists
+	        const selectedContactsInput = document.getElementById("selected_contacts_input");
+	        const selectedContactNames = $(selectedContactsInput).tagsinput('items');
+	        const contactCount = selectedContactNames.length;
+	        if (contactCount > 0) {
+	            contactCountSpan.textContent = `(${contactCount})`;
+	            contactCountSpan.style.display = "inline";
+	        } else {
+	            contactCountSpan.style.display = "none";
+	        }
+	        console.log("Updated contact count: ", contactCount); // Log the updated contact count
+	    }
+	}
+
+	// Function to check if a string contains any digits
+	function containsNumber(text) {
+	    // Check if the text contains a digit using a regular expression
+	    return /\d/.test(text);
+	}
+
+	function decrementValue(photoId) {
+        var quantityInput = document.getElementById('quantityInput_' + photoId);
+        var value = parseInt(quantityInput.value);
+        if (value > 1) {
+            quantityInput.value = value - 1;
+        }
+    }
+
+	function incrementValue(photoId) {
+	    const input = document.getElementById(`quantityInput_${photoId}`);
+	    if (!input) {
+	        console.error(`Input element with ID quantityInput_${photoId} not found.`);
+	        return;
+	    }
+	    const currentValue = parseInt(input.value, 10);
+	    if (!isNaN(currentValue) && currentValue < input.max) {
+	        input.value = currentValue + 1;
+	    }
+	}
+
+	/*function incrementValue(photoId) {
+	        var quantityInput = document.getElementById('quantityInput_' + photoId);
+	        var value = parseInt(quantityInput.value);
+	        if (value < 10) {
+	            quantityInput.value = value + 1;
+	        }
+	    }*/
+
+	function addToCart(photoMerchantId, addToCartUrl, quantity) {
+	    var messageStatusId = '#message_status_' + photoMerchantId;
+	    
+	    $(messageStatusId).addClass('hidden').removeClass('alert-success alert-danger');
+	    
+	    $.ajax({
+	        url: addToCartUrl,
+	        type: 'POST',
+	        data: {
+	            photoMerchantId: photoMerchantId,
+	            quantity: quantity  // Pass the quantity parameter
+	        },
+	        success: function(response) {
+	            $(messageStatusId).removeClass('hidden')
+	                              .addClass('alert-success')
+	                              .text("Added")
+	                              .fadeIn();
+	            
+	            console.log("Button ID:", '#button_' + photoMerchantId);
+	   			$('#button_' + photoMerchantId).removeClass('btn-warning btn-info').addClass('btn-primary');
+	   			 //$('#button_' + photoMerchantId).css('background-color', 'green');
+	
+				window.location.reload();
+	            
+	            // Hide the message after a few seconds (optional)
+	            setTimeout(function() {
+	                $(messageStatusId).fadeOut();
+	            }, 3000);
+	        },
+	        error: function(error) {
+	            $(messageStatusId).removeClass('hidden')
+	                              .addClass('alert-danger')
+	                              .text("Error.")
+	                              .fadeIn();
+	            
+	            // Hide the message after a few seconds (optional)
+	            setTimeout(function() {
+	                $(messageStatusId).fadeOut();
+	            }, 3000);
+	        }
+	    });
+	}
+	
+	function goBack() {
+	   window.history.back();
+	}
+
+
+	function saveContacts() {
+		
+		var shortLinkId = $('#shortLinkId').val();
+		var staffLinkId = $('#staffLinkId').val();
+	
+		 const selectedContactNames = $('#selected_contacts_input').tagsinput('items');
+		  if (selectedContactNames.length === 0) {
+		   // alert("No contacts selected to save.");
+		   statusAlertWidget('#contact_status_', 'alert-danger', 'No Contact Selected tp Refer...');
+		    return;
+		  }
+		  
+		   if (selectedContactNames.length > 10) {
+		   // alert("No contacts selected to save.");
+		   statusAlertWidget('#contact_status_', 'alert-danger', 'Contact Selected More than 10...');
+		    return;
+		  }
+		  
+		  	// Hide the "Submit" button and show the spinner
+	  		$('#btn_submit').hide();
+	  		$('#loading_spinner').show();
+  
+  
+	   	// Filter the selectedContacts array to only include currently selected contacts
+  		const selectedContactsToSend = selectedContacts.filter(contact => selectedContactNames.includes(contact.name));
+  	
+	  /*  var url = '/api/referrals/multipleContacts';
+	     var params = '';
+	     
+	    if (shortLinkId) {
+	        params += '?shortLink=' + shortLinkId; 
+	    }
+	
+	    if (staffLinkId) {
+	        params += '&staffLink=' + staffLinkId; 
+	    }
+	
+	    url += params;*/ 
+	    
+	    var url = '/api/referrals/multipleContacts/' + shortLinkId + '/' + staffLinkId;
+	
+	    console.log('url : ' + url);
+	    
+	    
+	    $.ajax({
+	        headers: {
+	            'Content-Type': 'application/json'
+	        },
+	        data: JSON.stringify({ selectedContacts: selectedContactsToSend }),
+	        timeout: 60000,
+	        type: 'POST',
+	        url: url,
+	    }).done(function (data, textStatus, jqXHR) {
+	        console.log('Success:', data);
+	        // Assuming 'data' contains the count of newly referred contacts
+	        statusAlertWidget('#contact_status_', 'alert alert-success', data);
+	        
+	         // Hide the spinner and show the "Submit" button again
+	    $('#loading_spinner').hide();
+	    $('#btn_submit').show();
+	        
+	        // Display the count in your HTML element
+	       // $('#new_contacts_count').text('New Contacts Referred: ' + data);
+	    }).fail(function (jqXHR, textStatus, errorThrown) {
+	        console.log('Error:', textStatus);
+	        statusAlertWidget('#contact_status_', 'alert-danger', 'Failed');
+	        
+	        // Hide the spinner and show the "Submit" button again
+	    $('#loading_spinner').hide();
+	    $('#btn_submit').show();
+	    });
+	}
+	
+	 function goBack() {
+        window.history.back(); // This will navigate back to the previous page
+    }
+
+
+</script>
+</body>
+</html>

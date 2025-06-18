@@ -1,0 +1,106 @@
+<nav th:fragment="navbar" class="fixed top-0 left-0 w-full z-20 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 border-b border-gray-200">
+    <div class="max-w-screen-xl mx-auto p-4 flex flex-wrap items-center justify-between">
+        <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
+            <img th:src="@{images/crm.png}" class="h-8" alt="CRM Logo" />
+            <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white" style="font-family: cursive;">CRM</span>
+        </a>
+        
+        <button data-collapse-toggle="navbar-solid-bg" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-solid-bg" aria-expanded="false">
+            <span class="sr-only">Open main menu</span>
+            <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+            </svg>
+        </button>
+        
+        <div class="hidden w-full md:flex md:w-auto" id="navbar-solid-bg">
+            <ul class="flex flex-col mt-4 bg-gray-50 md:bg-transparent dark:bg-gray-800 md:dark:bg-transparent rounded-lg md:flex-row md:space-x-8 md:mt-0 md:border-0 dark:border-gray-700">
+                <li th:unless="${hideLinks}">
+                    <a href="#home" class="block py-2 px-3 md:p-0 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:dark:text-blue-500 dark:bg-blue-600 md:dark:bg-transparent">Home</a> 
+                </li>
+                <li th:if="${hideLinks}">
+                    <a href="/home" class="block py-2 px-3 md:p-0 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:dark:text-blue-500 dark:bg-blue-600 md:dark:bg-transparent">Home</a> 
+                </li>
+                <li th:unless="${hideLinks}">
+                    <a href="#about" class="block py-2 px-3 md:p-0 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">About</a>
+                </li>
+                <li th:unless="${hideLinks}">
+                    <a href="#services" class="block py-2 px-3 md:p-0 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Services</a>
+                </li>
+                <li>
+                    <div class="flex md:space-x-4 rtl:space-x-reverse mt-4 md:mt-0">
+                        <a href="/login" type="button" class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 shadow-lg shadow-green-500/50 dark:shadow-lg dark:shadow-green-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Login</a>
+                       <!-- <a href="/register" type="button" class="text-white bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 shadow-lg shadow-cyan-500/50 dark:shadow-lg dark:shadow-cyan-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Signup</a>-->
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var navLinks = document.querySelectorAll('nav a');
+
+    // Function for smooth scrolling
+    function smoothScrollToTarget(e) {
+        e.preventDefault();
+
+        var href = this.getAttribute('href');
+        var targetId = href.substring(1);
+        var targetElement = document.getElementById(targetId);
+
+        // Smooth scroll to the target section
+        window.scrollTo({
+            top: targetElement.offsetTop,
+            behavior: 'smooth'
+        });
+    }
+
+    // Add smooth scrolling event listeners to relevant links
+    navLinks.forEach(function(link) {
+        var href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+            link.addEventListener('click', smoothScrollToTarget);
+        } else if (href === '/login' || href === '/register') {
+            link.addEventListener('click', function(e) {
+                // Perform redirection to login or register page
+                window.location.href = href;
+            });
+        }
+    });
+
+    // Function to handle redirection for home link if necessary
+    var homeLink = document.querySelector('nav a[href="/home"]');
+    if (homeLink) {
+        homeLink.addEventListener('click', function(e) {
+            if (window.location.pathname !== '/home') {
+                e.preventDefault();
+                window.location.href = '/home';
+            }
+        });
+    }
+});
+
+//                document.addEventListener('DOMContentLoaded', function() {
+//     var navLinks = document.querySelectorAll('nav a:not([href="/login"]):not([href="/register"])');
+
+//     navLinks.forEach(function(link) {
+//         link.addEventListener('click', function(e) {
+//             e.preventDefault();
+
+//             var targetId = this.getAttribute('href').substring(1);
+//             var targetElement = document.getElementById(targetId);
+
+//             // Smooth scroll to the target section
+//             window.scrollTo({
+//                 top: targetElement.offsetTop,
+//                 behavior: 'smooth'
+//             });
+//         });
+//     });
+// });
+
+        
+    </script>
+
+
