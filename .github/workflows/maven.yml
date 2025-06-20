@@ -80,7 +80,7 @@ jobs:
           image: arjunrathod1996/scmproject-githubactions   # 👈 your Docker Hub repo/image name
           tags: latest
           registry: docker.io
-          dockerfile: Dockerfile.ci           # 👈 or just `Dockerfile` if you use the default name
+          dockerfile: Dockerfile          # 👈 or just `Dockerfile` if you use the default name
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
