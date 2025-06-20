@@ -16,15 +16,14 @@
 # Use Java 17 base image
 FROM eclipse-temurin:17-jdk-alpine
 
-# Set working directory
+# Set work directory
 WORKDIR /app
 
-# Copy the jar (adjust name if needed)
-COPY target/scmproject-0.0.1-SNAPSHOT.jar app.jar
+# Copy the built jar from target directory
+COPY target/spring-boot-docker.jar app.jar
 
-# Run the jar
+# Run the Spring Boot application
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
 
 
 
