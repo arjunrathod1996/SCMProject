@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scm-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scm-app
+  template:
+    metadata:
+      labels:
+        app: scm-app
+    spec:
+      containers:
+        - name: scm-app
+          image: arjunrathod1996/scmproject-githubactions:latest
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql:3306/SCM
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: root
