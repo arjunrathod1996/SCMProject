@@ -82,8 +82,9 @@ jobs:
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > ~/.kube/config
+          chmod 600 ~/.kube/config
           kubectl version --client
-          kubectl config get-contexts
+          kubectl config current-context
 
       - name: Deploy to Kubernetes
         run: |
