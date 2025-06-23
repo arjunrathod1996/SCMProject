@@ -87,9 +87,9 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl apply -f mysql.yaml
-          kubectl apply -f deployment.yaml
-          kubectl apply -f service.yaml
+          kubectl apply -f k8s/mysql.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml 
 
       - name: Submit Maven dependency graph (optional)
         if: always()
