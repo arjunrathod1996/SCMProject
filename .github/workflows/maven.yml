@@ -78,13 +78,16 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Set up kubectl
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > ~/.kube/config
-          chmod 600 ~/.kube/config
-          kubectl version --client
-          kubectl config current-context
+#      - name: Set up kubectl
+#        run: |
+#          mkdir -p ~/.kube
+#          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > ~/.kube/config
+#          chmod 600 ~/.kube/config
+#          kubectl version --client
+#          kubectl config current-context
+
+      - name: Set up KinD (Kubernetes cluster)
+        uses: helm/kind-action@v1.7.0
 
       - name: Deploy to Kubernetes
         run: |
