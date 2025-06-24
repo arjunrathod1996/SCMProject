@@ -80,8 +80,12 @@ jobs:
             -Dsonar.projectKey=arjunrathod1996_SCMProject \
             -Dsonar.organization=arjunrathod1996 \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-    
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.base=${{ github.base_ref }}
+      
+      
 
       - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
