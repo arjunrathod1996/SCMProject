@@ -68,6 +68,12 @@ jobs:
             echo "No tests found. Skipping test step."
           fi
 
+      - name: Debug SonarCloud Project Info
+        run: |
+          echo "SONAR_TOKEN = ${{ secrets.SONAR_TOKEN }}"
+          echo "Project Key = arjunrathod1996_SCMProject"
+          echo "Organization = arjunrathod1996"
+
       - name: SonarCloud Scan
         run: |
           mvn sonar:sonar \
