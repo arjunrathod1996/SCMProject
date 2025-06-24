@@ -77,15 +77,15 @@ jobs:
       - name: SonarCloud Scan
         run: |
           mvn sonar:sonar \
-            -Dsonar.projectKey=arjunrathod1996_SCMProject \
+            -Dsonar.projectKey=SCM-Project \
             -Dsonar.organization=arjunrathod1996 \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
             -Dsonar.pullrequest.branch=${{ github.head_ref }} \
             -Dsonar.pullrequest.base=${{ github.base_ref }}
-      
-      
+
+
 
       - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
@@ -97,13 +97,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-#      - name: Set up kubectl
-#        run: |
-#          mkdir -p ~/.kube
-#          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > ~/.kube/config
-#          chmod 600 ~/.kube/config
-#          kubectl version --client
-#          kubectl config current-context
+      #      - name: Set up kubectl
+      #        run: |
+      #          mkdir -p ~/.kube
+      #          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > ~/.kube/config
+      #          chmod 600 ~/.kube/config
+      #          kubectl version --client
+      #          kubectl config current-context
 
       - name: Set up KinD (Kubernetes cluster)
         uses: helm/kind-action@v1.7.0
