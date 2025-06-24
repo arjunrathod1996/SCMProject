@@ -68,12 +68,14 @@ jobs:
             echo "No tests found. Skipping test step."
           fi
 
-      - name: SonarQube Analysis
+      - name: SonarCloud Scan
         run: |
-          mvn verify sonar:sonar \
-            -Dsonar.projectKey=SCM-Project \
-            -Dsonar.host.url=http://localhost:9000 \
+          mvn sonar:sonar \
+            -Dsonar.projectKey=arjunrathod1996_SCMProject \
+            -Dsonar.organization=arjunrathod1996 \
+            -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+    
 
       - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
