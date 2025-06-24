@@ -23,14 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.SCM.cartItem.CartItem.CartItemStatus;
 import com.SCM.controllers.BusinessController;
 import com.SCM.controllers.Merchant;
-import com.SCM.entities.Business;
 import com.SCM.entities.Customer;
 import com.SCM.entities.User;
 import com.SCM.insight.CartBillSummaryInsight.CustomerRankingStat;
 import com.SCM.insight.CartBillSummaryInsightService;
-import com.SCM.photo.PhotoMerchant;
 import com.SCM.photo.PhotoMerchantRepository;
-import com.SCM.photo.PhotoRepository;
 import com.SCM.relation.CustomerRelation;
 import com.SCM.relation.CustomerRelation.AquisitionMode;
 import com.SCM.relation.CustomerRelation.Source;
@@ -38,10 +35,7 @@ import com.SCM.relation.CustomerRelationRepository;
 import com.SCM.repository.CustomerRepository;
 import com.SCM.repository.MerchantRepository;
 import com.SCM.repository.UserRepository;
-import com.SCM.role.Role.RoleType;
 import com.SCM.service.CommonService;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/cart")
@@ -87,25 +81,26 @@ public class CartController {
             System.out.println("addToCart endpoint - shortLink: " + shortLink + ", staffLink: " + staffLink + ", photoMerchantId: " + photoMerchantId + ", quantity: " + quantity);
 
             User user = userRepository.findByStaffLink(staffLink);
-            Merchant merchant = merchantRepository.findByShortLink(shortLink);
-            if (user == null && merchant == null) {
+            if (user == null) {
                 return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
             }
 
-            // Assuming you have a way to get the user ID from the user object
-            //cartService.addToCart(user.getId(), photoMerchantId, quantity, merchant.getId());
-            
+            Merchant merchant = merchantRepository.findByShortLink(shortLink);
+            if (merchant == null) {
+                return new ResponseEntity<>("Merchant not found", HttpStatus.NOT_FOUND);
+            }
+
             cartService.addToCart(user.getId(), photoMerchantId, quantity);
 
             return new ResponseEntity<>("Item added to cart", HttpStatus.OK);
         } catch (Exception e) {
-            // Handle the exception and log it
             System.err.println("Error occurred while adding to cart: " + e.getMessage());
             return new ResponseEntity<>("Error occurred while adding item to cart", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    
+
+
+
 //    @PostMapping("/access/{shortLink}/{staffLink}/bill")
 //    public ResponseEntity<String> billItems(@PathVariable String shortLink, @PathVariable String staffLink) {
 //    	
