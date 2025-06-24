@@ -77,8 +77,8 @@ jobs:
       - name: SonarCloud Scan
         run: |
           mvn sonar:sonar \
-            -Dsonar.projectKey=SCM-Project \
-            -Dsonar.organization=arjunrathod1996 \
+            -Dsonar.projectKey=arjunrathod1996 \
+            -Dsonar.organization=Arjun \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
