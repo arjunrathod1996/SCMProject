@@ -59,16 +59,29 @@ jobs:
             -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
             -Dspring.jpa.hibernate.ddl-auto=update
 
-      - name: Run tests if test folder exists
+#      - name: Run tests if test folder exists
+#        run: |
+#          if [ -d "src/test" ]; then
+#            echo "Running tests..."
+#            mvn test
+#          else
+#            echo "No tests found. Skipping test step."
+#          fi
+
+      - name: Run tests and generate JaCoCo report
         run: |
           if [ -d "src/test" ]; then
-            echo "Running tests..."
-            mvn test
+            echo "Running tests with JaCoCo..."
+            mvn clean verify \
+              -Dspring.datasource.url=jdbc:mysql://localhost:3306/SCM \
+              -Dspring.datasource.username=root \
+              -Dspring.datasource.password=root
           else
             echo "No tests found. Skipping test step."
           fi
+      
 
-#      - name: Debug SonarCloud Project Info
+      #      - name: Debug SonarCloud Project Info
 #        run: |
 #          echo "SONAR_TOKEN = ${{ secrets.SONAR_TOKEN }}"
 #          echo "Project Key = arjunrathod1996_SCMProject"
@@ -80,7 +93,8 @@ jobs:
             -Dsonar.projectKey=arjunrathod1996_SCMProject \
             -Dsonar.organization=arjunrathod1996 \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
       
 
       - name: Build & push Docker image
