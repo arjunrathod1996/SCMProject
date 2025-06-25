@@ -74,8 +74,12 @@ jobs:
       - name: Rename JAR for Docker
         run: |
           JAR_FILE=$(ls target/*.jar | grep -v 'original' | head -n 1)
-          echo "Renaming $JAR_FILE to target/spring-boot-docker.jar"
-          mv "$JAR_FILE" target/spring-boot-docker.jar
+          if [ "$JAR_FILE" != "target/spring-boot-docker.jar" ]; then
+            echo "Renaming $JAR_FILE to target/spring-boot-docker.jar"
+            mv "$JAR_FILE" target/spring-boot-docker.jar
+          else
+            echo "JAR already named correctly. No need to rename."
+          fi 
 
       - name: SonarCloud Scan
         run: |
