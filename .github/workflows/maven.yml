@@ -1,14 +1,6 @@
 name: SCM Project CI/CD Actions
 
 on:
-  push:
-    branches:
-      - master
-      - dev
-      - homol
-      - Current-Sprint
-      - 'sprint/**'
-      - 'feat/**'
   pull_request:
     branches:
       - master
@@ -72,21 +64,18 @@ jobs:
             -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
             -Dspring.jpa.hibernate.ddl-auto=update
 
-      - name: SonarQube Analysis
+      - name: SonarCloud Scan
         run: |
-          mvn -B verify sonar:sonar \
+          mvn sonar:sonar \
             -Dsonar.projectKey=arjunrathod1996_SCMProject \
             -Dsonar.organization=arjunrathod1996 \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
-            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-            -Dsonar.pullrequest.base=${{ github.base_ref }}
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
-  deploy-to-prod:
-    name: Deploy to Kubernetes (only master)
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+  deploy-to-k8s:
+    name: Deploy to Kubernetes (only on PR to master)
+    if: github.event.pull_request.base.ref == 'master'
     needs: ci-build-test
     runs-on: ubuntu-latest
 
