@@ -4,26 +4,20 @@ on:
   push:
     branches:
       - master
-      - dev
-      - homol
-      - Current-Sprint
-      - 'Sprint*'
-      - 'feat/**'
-      - 'hotfix/**'
   pull_request:
     branches:
       - master
       - dev
       - homol
       - Current-Sprint
-      - 'Sprint*'
 
 permissions:
   contents: read
   security-events: write
 
 jobs:
-  build-and-deploy:
+  ci-build-test:
+    name: CI - Build, Test, Sonar, Coverage
     runs-on: ubuntu-latest
 
     services:
@@ -64,16 +58,29 @@ jobs:
 
       - name: Run tests, build and generate JaCoCo report
         run: |
-          if [ -d "src/test" ]; then
-            echo "Running tests and building with JaCoCo..."
-            mvn clean verify \
-              -Dspring.datasource.url=jdbc:mysql://localhost:3306/SCM \
-              -Dspring.datasource.username=root \
-              -Dspring.datasource.password=root \
-              -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
-              -Dspring.jpa.hibernate.ddl-auto=update
+          mvn clean verify \
+            -Dspring.datasource.url=jdbc:mysql://localhost:3306/SCM \
+            -Dspring.datasource.username=root \
+            -Dspring.datasource.password=root \
+            -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
+            -Dspring.jpa.hibernate.ddl-auto=update
+
+      - name: Enforce Code Coverage >= 40%
+        run: |
+          if [ ! -f target/site/jacoco/jacoco.xml ]; then
+            echo "❌ JaCoCo report not found. Failing build."
+            exit 1
+          fi
+          MISSED=$(grep -oPm1 "(?<=<counter type=\"INSTRUCTION\" missed=\")\d+" target/site/jacoco/jacoco.xml)
+          COVERED=$(grep -oPm1 "(?<=missed=\"\d+\" covered=\")\d+" target/site/jacoco/jacoco.xml)
+          TOTAL=$((MISSED + COVERED))
+          PERCENT=$(( 100 * COVERED / TOTAL ))
+          echo "Coverage: $PERCENT%"
+          if [ "$PERCENT" -lt 40 ]; then
+            echo "❌ Code coverage is below 40%. Failing the build."
+            exit 1
           else
-            echo "No tests found. Skipping."
+            echo "✅ Code coverage is $PERCENT%, which meets the requirement."
           fi
 
       - name: SonarCloud Scan
@@ -84,6 +91,16 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+
+  deploy-to-prod:
+    name: Deploy to Kubernetes (only master)
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    needs: ci-build-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
