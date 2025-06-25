@@ -50,16 +50,18 @@ jobs:
           echo "MySQL failed to start in time."
           exit 1
 
-      - name: Run tests and generate JaCoCo report
+      - name: Run tests, build and generate JaCoCo report
         run: |
           if [ -d "src/test" ]; then
-            echo "Running tests with JaCoCo..."
+            echo "Running tests and building with JaCoCo..."
             mvn clean verify \
               -Dspring.datasource.url=jdbc:mysql://localhost:3306/SCM \
               -Dspring.datasource.username=root \
-              -Dspring.datasource.password=root
+              -Dspring.datasource.password=root \
+              -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
+              -Dspring.jpa.hibernate.ddl-auto=update
           else
-            echo "No tests found. Skipping test step."
+            echo "No tests found. Skipping."
           fi
 
       - name: SonarCloud Scan
@@ -71,35 +73,17 @@ jobs:
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
-      - name: Wait for SonarCloud analysis to be ready
-        run: |
-          echo "Waiting for SonarCloud to process the report..."
-          sleep 20
-          analysisId=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/ce/component?component=arjunrathod1996_SCMProject" | jq -r '.queue[0].id')
-          echo "Analysis ID: $analysisId"
-
-          for i in {1..10}; do
-            status=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/ce/task?id=$analysisId" | jq -r '.task.status')
-            echo "Status: $status"
-            if [[ "$status" == "SUCCESS" ]]; then
-              break
-            fi
-            sleep 5
-          done
-
       - name: Check SonarCloud Quality Gate
         run: |
-          echo "Fetching task ID..."
+          echo "Waiting for SonarCloud analysis task to complete..."
           taskInfo=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/ce/component?component=arjunrathod1996_SCMProject")
           taskId=$(echo "$taskInfo" | jq -r '.current.id')
-
-          echo "Polling for SonarCloud analysis to complete..."
+          
           for i in {1..10}; do
+            echo "Checking task status (attempt $i)..."
             taskStatusResp=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/ce/task?id=$taskId")
             taskStatus=$(echo "$taskStatusResp" | jq -r '.task.status')
             analysisId=$(echo "$taskStatusResp" | jq -r '.task.analysisId')
-
-            echo "Attempt $i: Task status = $taskStatus"
             if [[ "$taskStatus" == "SUCCESS" && "$analysisId" != "null" ]]; then
               break
             fi
@@ -107,13 +91,12 @@ jobs:
           done
 
           if [ "$analysisId" == "null" ]; then
-            echo "❌ Analysis ID could not be retrieved. Exiting."
+            echo "❌ SonarCloud analysis did not complete in time."
             exit 1
           fi
 
-          echo "Checking Quality Gate status..."
-          projectStatus=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
-            "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
+          echo "Checking Quality Gate..."
+          projectStatus=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
 
           echo "Quality Gate Status: $projectStatus"
 
@@ -139,7 +122,7 @@ jobs:
         run: |
           kubectl apply -f k8s/mysql.yaml
           kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/service.yaml 
 
       - name: Submit Maven dependency graph (optional)
         if: always()
