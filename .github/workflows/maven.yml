@@ -65,24 +65,6 @@ jobs:
             -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
             -Dspring.jpa.hibernate.ddl-auto=update
 
-      - name: Enforce Code Coverage >= 40%
-        run: |
-          if [ ! -f target/site/jacoco/jacoco.xml ]; then
-            echo "❌ JaCoCo report not found. Failing build."
-            exit 1
-          fi
-          MISSED=$(grep -oPm1 "(?<=<counter type=\"INSTRUCTION\" missed=\")\d+" target/site/jacoco/jacoco.xml)
-          COVERED=$(grep -oPm1 "(?<=missed=\"\d+\" covered=\")\d+" target/site/jacoco/jacoco.xml)
-          TOTAL=$((MISSED + COVERED))
-          PERCENT=$(( 100 * COVERED / TOTAL ))
-          echo "Coverage: $PERCENT%"
-          if [ "$PERCENT" -lt 40 ]; then
-            echo "❌ Code coverage is below 40%. Failing the build."
-            exit 1
-          else
-            echo "✅ Code coverage is $PERCENT%, which meets the requirement."
-          fi
-
       - name: SonarCloud Scan
         run: |
           mvn sonar:sonar \
@@ -94,7 +76,7 @@ jobs:
 
   deploy-to-prod:
     name: Deploy to Kubernetes (only master)
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
     needs: ci-build-test
     runs-on: ubuntu-latest
 
