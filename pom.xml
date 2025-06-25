@@ -210,7 +210,13 @@
 	<build>
     <finalName>spring-boot-docker</finalName>
     <plugins>
-        <!-- Spring Boot Maven Plugin with exclusion configuration -->
+		<!-- SonarQube Plugin -->
+		<plugin>
+			<groupId>org.sonarsource.scanner.maven</groupId>
+			<artifactId>sonar-maven-plugin</artifactId>
+			<version>3.9.1.2184</version>
+		</plugin>
+		<!-- Spring Boot Maven Plugin with exclusion configuration -->
         <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
@@ -224,8 +230,30 @@
                 </excludes>
             </configuration>
         </plugin>
-        
-        <!-- Docker Maven Plugin for building Docker image -->
+
+		<plugin>
+			<groupId>org.jacoco</groupId>
+			<artifactId>jacoco-maven-plugin</artifactId>
+			<version>0.8.11</version>
+			<executions>
+				<execution>
+					<goals>
+						<goal>prepare-agent</goal>
+					</goals>
+				</execution>
+				<execution>
+					<id>report</id>
+					<phase>verify</phase>
+					<goals>
+						<goal>report</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+
+
+
+		<!-- Docker Maven Plugin for building Docker image -->
         <plugin>
             <groupId>com.spotify</groupId>
             <artifactId>docker-maven-plugin</artifactId>
@@ -264,6 +292,14 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<!-- ADD THIS TO FIX PLUGIN NOT FOUND ISSUE -->
+	<pluginRepositories>
+		<pluginRepository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</pluginRepository>
+	</pluginRepositories>
 	
 	
 </project>
