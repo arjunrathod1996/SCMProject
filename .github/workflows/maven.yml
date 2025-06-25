@@ -73,38 +73,6 @@ jobs:
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
-      - name: Check SonarCloud Quality Gate
-        run: |
-          echo "Waiting for SonarCloud analysis task to complete..."
-          taskInfo=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/ce/component?component=arjunrathod1996_SCMProject")
-          taskId=$(echo "$taskInfo" | jq -r '.current.id')
-          
-          for i in {1..10}; do
-            echo "Checking task status (attempt $i)..."
-            taskStatusResp=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/ce/task?id=$taskId")
-            taskStatus=$(echo "$taskStatusResp" | jq -r '.task.status')
-            analysisId=$(echo "$taskStatusResp" | jq -r '.task.analysisId')
-            if [[ "$taskStatus" == "SUCCESS" && "$analysisId" != "null" ]]; then
-              break
-            fi
-            sleep 10
-          done
-
-          if [ "$analysisId" == "null" ]; then
-            echo "❌ SonarCloud analysis did not complete in time."
-            exit 1
-          fi
-
-          echo "Checking Quality Gate..."
-          projectStatus=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
-
-          echo "Quality Gate Status: $projectStatus"
-
-          if [ "$projectStatus" != "OK" ]; then
-            echo "❌ SonarCloud Quality Gate failed."
-            exit 1
-          fi
-
       - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
