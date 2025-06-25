@@ -2,9 +2,21 @@ name: SCM Project CI/CD Actions
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
+      - dev
+      - homol
+      - Current-Sprint
+      - 'Sprint*'
+      - 'feat/**'
+      - 'hotfix/**'
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
+      - dev
+      - homol
+      - Current-Sprint
+      - 'Sprint*'
 
 permissions:
   contents: read
@@ -90,7 +102,7 @@ jobs:
         run: |
           kubectl apply -f k8s/mysql.yaml
           kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml 
+          kubectl apply -f k8s/service.yaml
 
       - name: Submit Maven dependency graph (optional)
         if: always()
