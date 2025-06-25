@@ -89,8 +89,31 @@ jobs:
 
       - name: Check SonarCloud Quality Gate
         run: |
-          analysisId=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/ce/component?component=arjunrathod1996_SCMProject" | jq -r '.queue[0].id')
-          projectStatus=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
+          echo "Fetching task ID..."
+          taskInfo=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/ce/component?component=arjunrathod1996_SCMProject")
+          taskId=$(echo "$taskInfo" | jq -r '.current.id')
+
+          echo "Polling for SonarCloud analysis to complete..."
+          for i in {1..10}; do
+            taskStatusResp=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/ce/task?id=$taskId")
+            taskStatus=$(echo "$taskStatusResp" | jq -r '.task.status')
+            analysisId=$(echo "$taskStatusResp" | jq -r '.task.analysisId')
+
+            echo "Attempt $i: Task status = $taskStatus"
+            if [[ "$taskStatus" == "SUCCESS" && "$analysisId" != "null" ]]; then
+              break
+            fi
+            sleep 10
+          done
+
+          if [ "$analysisId" == "null" ]; then
+            echo "❌ Analysis ID could not be retrieved. Exiting."
+            exit 1
+          fi
+
+          echo "Checking Quality Gate status..."
+          projectStatus=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
 
           echo "Quality Gate Status: $projectStatus"
 
