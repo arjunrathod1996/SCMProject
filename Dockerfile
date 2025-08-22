@@ -26,6 +26,7 @@
 #ENTRYPOINT ["java", "-jar", "app.jar"]
 
 
+
 # Stage 1: Build the JAR using Maven
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
