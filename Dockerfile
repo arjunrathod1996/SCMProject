@@ -13,17 +13,32 @@
 ## Specify the command to run your Spring Boot application using CMD when the container starts
 #CMD ["java", "-jar", "/app/spring-boot-docker.jar"]
 
-# Use Java 17 base image
-FROM eclipse-temurin:17-jdk-alpine
+## Use Java 17 base image
+#FROM eclipse-temurin:17-jdk-alpine
+#
+## Set work directory
+#WORKDIR /app
+#
+## Copy the built jar from target directory
+#COPY target/spring-boot-docker.jar app.jar
+#
+## Run the Spring Boot application
+#ENTRYPOINT ["java", "-jar", "app.jar"]
 
-# Set work directory
+
+# Stage 1: Build the JAR using Maven
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Copy the built jar from target directory
-COPY target/spring-boot-docker.jar app.jar
-
-# Run the Spring Boot application
+# Stage 2: Run the JAR
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
 
 
 
