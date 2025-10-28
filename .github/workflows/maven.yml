@@ -1,205 +1,25 @@
-#name: SCM Project CI/CD Actions
-#
-#on:
-#  push:
-#    branches:
-#      - master
-#      - dev
-#      - homol
-#      - 'sprint/**'
-#      - 'feat/**'
-#  pull_request:
-#    branches:
-#      - master
-#      - dev
-#      - homol
-#      - 'sprint/**'
-#      - 'feat/**'
-#  workflow_dispatch:
-#    inputs:
-#      skip_tests:
-#        description: 'Skip running test cases?'
-#        required: true
-#        default: 'false'
-#        type: choice
-#        options:
-#          - 'true'
-#          - 'false'
-#      skip_sonar:
-#        description: 'Skip Sonar analysis?'
-#        required: true
-#        default: 'false'
-#        type: choice
-#        options:
-#          - 'true'
-#          - 'false'
-#
-#permissions:
-#  contents: read
-#  security-events: write
-#
-#jobs:
-#  # 🧪 Stage 1: Build and Deploy to Staging (DEV / HOMOL / FEATURE)
-#  staging:
-#    runs-on: ubuntu-latest
-#    if: |
-#      github.ref == 'refs/heads/dev' ||
-#      github.ref == 'refs/heads/homol' ||
-#      startsWith(github.ref, 'refs/heads/feat/') ||
-#      startsWith(github.ref, 'refs/heads/sprint/')
-#
-#    services:
-#      mysql:
-#        image: mysql:8
-#        env:
-#          MYSQL_ROOT_PASSWORD: root
-#          MYSQL_DATABASE: SCM
-#        ports:
-#          - 3306:3306
-#
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#
-#      - name: Set up JDK 17
-#        uses: actions/setup-java@v4
-#        with:
-#          java-version: '17'
-#          distribution: 'temurin'
-#          cache: maven
-#
-#      - name: Wait for MySQL
-#        run: |
-#          echo "Waiting for MySQL..."
-#          for i in {1..10}; do
-#            nc -z localhost 3306 && echo "MySQL ready" && exit 0
-#            sleep 5
-#          done
-#          exit 1
-#
-#      # ✅ Conditional test execution
-#      - name: Run tests
-#        if: ${{ github.event.inputs.skip_tests != 'true' }}
-#        run: mvn clean verify -Dspring.profiles.active=dev
-#
-#      - name: Skip tests
-#        if: ${{ github.event.inputs.skip_tests == 'true' }}
-#        run: echo "Skipping tests as selected in workflow_dispatch."
-#
-#      # ✅ Conditional Sonar execution
-#      - name: SonarCloud Scan
-#        if: ${{ github.event.inputs.skip_sonar != 'true' }}
-#        run: |
-#          mvn sonar:sonar \
-#            -Dsonar.projectKey=arjunrathod1996_SCMProject \
-#            -Dsonar.organization=arjunrathod1996 \
-#            -Dsonar.host.url=https://sonarcloud.io \
-#            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-#
-#      - name: Skip Sonar
-#        if: ${{ github.event.inputs.skip_sonar == 'true' }}
-#        run: echo "Skipping Sonar analysis as selected in workflow_dispatch."
-#
-#      - name: Build & push Docker image (staging)
-#        uses: mr-smithers-excellent/docker-build-push@v6
-#        with:
-#          image: arjunrathod1996/scmproject-githubactions
-#          tags: staging
-#          registry: docker.io
-#          dockerfile: Dockerfile
-#          username: ${{ secrets.DOCKER_USERNAME }}
-#          password: ${{ secrets.DOCKER_PASSWORD }}
-#
-#      - name: Deploy to Staging
-#        run: |
-#          echo "Deploying to Staging environment..."
-#          kubectl apply -f k8s/deployment-staging.yaml
-#          kubectl apply -f k8s/service.yaml
-#
-#  # 🚀 Stage 2: Deploy to Production (MASTER)
-#  production:
-#    runs-on: ubuntu-latest
-#    if: github.ref == 'refs/heads/master'
-#    needs: staging
-#
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#
-#      - name: Build & push Docker image (prod)
-#        uses: mr-smithers-excellent/docker-build-push@v6
-#        with:
-#          image: arjunrathod1996/scmproject-githubactions
-#          tags: latest
-#          registry: docker.io
-#          dockerfile: Dockerfile
-#          username: ${{ secrets.DOCKER_USERNAME }}
-#          password: ${{ secrets.DOCKER_PASSWORD }}
-#
-#      - name: Deploy to Production
-#        run: |
-#          echo "Deploying to Production (master branch)..."
-#          kubectl apply -f k8s/deployment-prod.yaml
-#          kubectl apply -f k8s/service.yaml
-
-
 name: SCM Project CI/CD Actions
 
 on:
   push:
     branches:
       - master
-      - dev
-      - homol
-      - 'sprint/**'
-      - 'feat/**'
   pull_request:
     branches:
       - master
       - dev
       - homol
+      - Current-Sprint
       - 'sprint/**'
       - 'feat/**'
-  workflow_dispatch:
-    inputs:
-      skip_tests:
-        description: 'Skip running test cases?'
-        required: true
-        default: 'false'
-        type: choice
-        options:
-          - 'true'
-          - 'false'
-      skip_sonar:
-        description: 'Skip Sonar analysis?'
-        required: true
-        default: 'false'
-        type: choice
-        options:
-          - 'true'
-          - 'false'
-      skip_all:
-        description: 'Skip both tests and Sonar?'
-        required: true
-        default: 'false'
-        type: choice
-        options:
-          - 'true'
-          - 'false'
 
 permissions:
   contents: read
   security-events: write
 
 jobs:
-  # 🧪 Stage 1: Build and Deploy to Staging (DEV / HOMOL / FEATURE)
-  staging:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    if: |
-      github.ref == 'refs/heads/dev' ||
-      github.ref == 'refs/heads/homol' ||
-      startsWith(github.ref, 'refs/heads/feat/') ||
-      startsWith(github.ref, 'refs/heads/sprint/')
 
     services:
       mysql:
@@ -209,6 +29,11 @@ jobs:
           MYSQL_DATABASE: SCM
         ports:
           - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout code
@@ -221,65 +46,51 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Wait for MySQL
+      - name: Wait for MySQL to be ready
         run: |
-          echo "Waiting for MySQL..."
+          echo "Waiting for MySQL to start..."
           for i in {1..10}; do
-            nc -z localhost 3306 && echo "MySQL ready" && exit 0
+            nc -z localhost 3306 && echo "MySQL is up" && exit 0
+            echo "Waiting..."
             sleep 5
           done
+          echo "MySQL failed to start in time."
           exit 1
 
-      # ✅ Conditional Test Execution
-      - name: Run Tests
-        if: ${{ github.event.inputs.skip_tests != 'true' && github.event.inputs.skip_all != 'true' }}
-        run: mvn clean verify -Dspring.profiles.active=dev
+      - name: Run tests, build and generate JaCoCo report
+        run: |
+          if [ -d "src/test" ]; then
+            echo "Running tests and building with JaCoCo..."
+            mvn clean verify \
+              -Dspring.datasource.url=jdbc:mysql://localhost:3306/SCM \
+              -Dspring.datasource.username=root \
+              -Dspring.datasource.password=root \
+              -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
+              -Dspring.jpa.hibernate.ddl-auto=update
+          else
+            echo "No tests found. Skipping."
+          fi
 
-      - name: Skip Tests
-        if: ${{ github.event.inputs.skip_tests == 'true' || github.event.inputs.skip_all == 'true' }}
-        run: echo "✅ Skipping tests as selected in workflow_dispatch."
+      - name: Rename JAR for Docker
+        run: |
+          JAR_FILE=$(ls target/*.jar | grep -v 'original' | head -n 1)
+          if [ "$JAR_FILE" != "target/spring-boot-docker.jar" ]; then
+            echo "Renaming $JAR_FILE to target/spring-boot-docker.jar"
+            mv "$JAR_FILE" target/spring-boot-docker.jar
+          else
+            echo "JAR already named correctly. No need to rename."
+          fi 
 
-      # ✅ Conditional Sonar Execution
       - name: SonarCloud Scan
-        if: ${{ github.event.inputs.skip_sonar != 'true' && github.event.inputs.skip_all != 'true' }}
         run: |
           mvn sonar:sonar \
             -Dsonar.projectKey=arjunrathod1996_SCMProject \
             -Dsonar.organization=arjunrathod1996 \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
-      - name: Skip Sonar
-        if: ${{ github.event.inputs.skip_sonar == 'true' || github.event.inputs.skip_all == 'true' }}
-        run: echo "✅ Skipping Sonar analysis as selected in workflow_dispatch."
-
-      - name: Build & push Docker image (staging)
-        uses: mr-smithers-excellent/docker-build-push@v6
-        with:
-          image: arjunrathod1996/scmproject-githubactions
-          tags: staging
-          registry: docker.io
-          dockerfile: Dockerfile
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Deploy to Staging
-        run: |
-          echo "🚀 Deploying to Staging environment..."
-          kubectl apply -f k8s/deployment-staging.yaml
-          kubectl apply -f k8s/service.yaml
-
-  # 🚀 Stage 2: Deploy to Production (MASTER)
-  production:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-    needs: staging
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Build & push Docker image (prod)
+      - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
           image: arjunrathod1996/scmproject-githubactions
@@ -289,8 +100,16 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Deploy to Production
+      - name: Set up KinD (Kubernetes cluster)
+        uses: helm/kind-action@v1.7.0
+
+      - name: Deploy to Kubernetes
         run: |
-          echo "🚀 Deploying to Production (master branch)..."
-          kubectl apply -f k8s/deployment-prod.yaml
-          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/mysql.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml 
+
+      - name: Submit Maven dependency graph (optional)
+        if: always()
+        continue-on-error: true
+        uses: advanced-security/maven-dependency-submission-action@v4
