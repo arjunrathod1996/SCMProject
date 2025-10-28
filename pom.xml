@@ -42,6 +42,12 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
 			<optional>true</optional>
@@ -157,17 +163,20 @@
     <version>9.1.22</version> <!-- Or the latest version -->
 </dependency>
 
-<!--<dependency>
-    <groupId>org.apache.poi</groupId>
-    <artifactId>poi</artifactId>
-    <version>4.1.2</version>  Downgrade to a stable version 
-</dependency>  
 
-<dependency>
-    <groupId>org.apache.poi</groupId>
-    <artifactId>poi-ooxml</artifactId>
-    <version>4.1.2</version>  Downgrade to a stable version 
-</dependency> -->
+
+
+		<!--<dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>4.1.2</version>  Downgrade to a stable version
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>4.1.2</version>  Downgrade to a stable version
+        </dependency> -->
 
 <dependency>
 	<groupId>org.apache.poi</groupId>
@@ -293,13 +302,7 @@
 		</dependencies>
 	</dependencyManagement>
 
-	<!-- ADD THIS TO FIX PLUGIN NOT FOUND ISSUE -->
-	<pluginRepositories>
-		<pluginRepository>
-			<id>central</id>
-			<url>https://repo.maven.apache.org/maven2</url>
-		</pluginRepository>
-	</pluginRepositories>
+
 	
 	
 </project>
