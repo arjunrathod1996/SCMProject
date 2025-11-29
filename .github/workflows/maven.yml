@@ -1,3 +1,120 @@
+#name: SCM Project CI/CD Actions
+#
+#on:
+#  push:
+#    branches:
+#      - master
+#  pull_request:
+#    branches:
+#      - master
+#      - dev
+#      - homol
+#      - Current-Sprint
+#      - 'sprint/**'
+#      - 'feat/**'
+#
+#permissions:
+#  contents: read
+#  security-events: write
+#
+#jobs:
+#  build-and-deploy:
+#    runs-on: ubuntu-latest
+#
+#    services:
+#      mysql:
+#        image: mysql:8
+#        env:
+#          MYSQL_ROOT_PASSWORD: root
+#          MYSQL_DATABASE: SCM
+#        ports:
+#          - 3306:3306
+#        options: >-
+#          --health-cmd="mysqladmin ping --silent"
+#          --health-interval=10s
+#          --health-timeout=5s
+#          --health-retries=5
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#          cache: maven
+#
+#      - name: Wait for MySQL to be ready
+#        run: |
+#          echo "Waiting for MySQL to start..."
+#          for i in {1..10}; do
+#            nc -z localhost 3306 && echo "MySQL is up" && exit 0
+#            echo "Waiting..."
+#            sleep 5
+#          done
+#          echo "MySQL failed to start in time."
+#          exit 1
+#
+#      - name: Run tests, build and generate JaCoCo report
+#        run: |
+#          if [ -d "src/test" ]; then
+#            echo "Running tests and building with JaCoCo..."
+#            mvn clean verify \
+#              -Dspring.datasource.url=jdbc:mysql://localhost:3306/SCM \
+#              -Dspring.datasource.username=root \
+#              -Dspring.datasource.password=root \
+#              -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
+#              -Dspring.jpa.hibernate.ddl-auto=update
+#          else
+#            echo "No tests found. Skipping."
+#          fi
+#
+#      - name: Rename JAR for Docker
+#        run: |
+#          JAR_FILE=$(ls target/*.jar | grep -v 'original' | head -n 1)
+#          if [ "$JAR_FILE" != "target/spring-boot-docker.jar" ]; then
+#            echo "Renaming $JAR_FILE to target/spring-boot-docker.jar"
+#            mv "$JAR_FILE" target/spring-boot-docker.jar
+#          else
+#            echo "JAR already named correctly. No need to rename."
+#          fi
+#
+#      - name: SonarCloud Scan
+#        run: |
+#          mvn sonar:sonar \
+#            -Dsonar.projectKey=arjunrathod1996_SCMProject \
+#            -Dsonar.organization=arjunrathod1996 \
+#            -Dsonar.host.url=https://sonarcloud.io \
+#            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+#            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+#
+#      - name: Build & push Docker image
+#        uses: mr-smithers-excellent/docker-build-push@v6
+#        with:
+#          image: arjunrathod1996/scmproject-githubactions
+#          tags: latest
+#          registry: docker.io
+#          dockerfile: Dockerfile
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#
+#      - name: Set up KinD (Kubernetes cluster)
+#        uses: helm/kind-action@v1.7.0
+#
+#      - name: Deploy to Kubernetes
+#        run: |
+#          kubectl apply -f k8s/mysql.yaml
+#          kubectl apply -f k8s/deployment.yaml
+#          kubectl apply -f k8s/service.yaml
+#
+#      - name: Submit Maven dependency graph (optional)
+#        if: always()
+#        continue-on-error: true
+#        uses: advanced-security/maven-dependency-submission-action@v4
+
+
 name: SCM Project CI/CD Actions
 
 on:
@@ -12,6 +129,27 @@ on:
       - Current-Sprint
       - 'sprint/**'
       - 'feat/**'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Select branch to build"
+        required: true
+        type: string
+      skip_tests:
+        description: "Skip Tests?"
+        required: true
+        default: "false"
+        type: boolean
+      skip_sonar:
+        description: "Skip Sonar Scanner?"
+        required: true
+        default: "false"
+        type: boolean
+      skip_quality_gate:
+        description: "Skip Quality Gate? (not used yet)"
+        required: true
+        default: "false"
+        type: boolean
 
 permissions:
   contents: read
@@ -38,6 +176,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref_name }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -58,6 +198,7 @@ jobs:
           exit 1
 
       - name: Run tests, build and generate JaCoCo report
+        if: ${{ github.event_name == 'push' || github.event.inputs.skip_tests == 'false' }}
         run: |
           if [ -d "src/test" ]; then
             echo "Running tests and building with JaCoCo..."
@@ -79,9 +220,10 @@ jobs:
             mv "$JAR_FILE" target/spring-boot-docker.jar
           else
             echo "JAR already named correctly. No need to rename."
-          fi 
+          fi
 
       - name: SonarCloud Scan
+        if: ${{ github.event_name == 'push' || github.event.inputs.skip_sonar == 'false' }}
         run: |
           mvn sonar:sonar \
             -Dsonar.projectKey=arjunrathod1996_SCMProject \
@@ -107,7 +249,7 @@ jobs:
         run: |
           kubectl apply -f k8s/mysql.yaml
           kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml 
+          kubectl apply -f k8s/service.yaml
 
       - name: Submit Maven dependency graph (optional)
         if: always()
