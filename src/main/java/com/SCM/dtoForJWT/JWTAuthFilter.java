@@ -211,6 +211,15 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+
+        // ⭐ Skip JWT validation for chatbot
+        if (path.startsWith("/public/chat")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String jwtToken = extractTokenFromRequest(request);
 

@@ -32,7 +32,7 @@
                     </div>
                 </div>
             </section>
-        
+
             <section id="about" th:fragment="about" class="">
                 <div class="container mx-auto px-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center dark:bg-gray-800 rounded-lg shadow-md p-8">
@@ -49,7 +49,7 @@
                     </div>
                 </div>
             </section>
-        
+
             <section id="services" th:fragment="services" class="">
                 <div class="container mx-auto px-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center dark:bg-gray-800 rounded-lg shadow-md p-8">
@@ -67,9 +67,77 @@
                 </div>
             </section>
         </div>
-    
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+
+        <!-- Floating Glowing Round Button -->
+        <div id="chatbot-btn"
+             class="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-indigo-600
+            text-white p-4 rounded-full shadow-2xl cursor-pointer animate-pulse z-50">
+            🤖
+        </div>
+
+        <!-- Robot Chatbot Window -->
+        <div id="chatbot-box"
+             class="hidden fixed bottom-24 right-6 w-96 bg-white/90 backdrop-blur-xl
+            rounded-2xl shadow-2xl border border-gray-200 z-50 transition-all">
+
+            <!-- Header with Robot Avatar -->
+            <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-600 to-indigo-700
+                text-white rounded-t-2xl shadow-lg">
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712100.png"
+                     class="w-10 h-10 rounded-full bg-white p-1 shadow">
+                <div>
+                    <h2 class="text-lg font-semibold">AI Robo Assistant</h2>
+                    <p class="text-xs opacity-90">Ask me anything…</p>
+                </div>
+                <button id="close-chatbot"
+                        class="ml-auto text-white text-xl font-bold hover:text-gray-300">×</button>
+            </div>
+
+            <!-- Chat Body -->
+            <div id="chat-body"
+                 class="p-4 h-80 overflow-y-auto space-y-3"
+                 style="
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-left: none;
+        border-right: none;
+     ">
+            </div>
+
+
+            <!-- Typing Indicator -->
+            <div id="typing"
+                 class="hidden px-4 pb-2 text-gray-500 text-sm italic animate-pulse">
+                Robo is typing...
+            </div>
+
+            <!-- Input Area -->
+            <div class="flex items-center p-3 border-t bg-gray-50 rounded-b-2xl">
+                <input id="chat-input" type="text"
+                       class="flex-1 bg-white border border-gray-300 rounded-xl p-2 px-3
+                      shadow-inner focus:ring-2 focus:ring-blue-400 outline-none"
+                       placeholder="Type your message..." />
+
+                <button id="send-btn"
+                        class="ml-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white
+                       px-4 py-2 rounded-xl shadow hover:opacity-90">
+                    Send
+                </button>
+            </div>
+        </div>
+
+        <!-- 🌟 Inline Animation -->
+<!--        <style>-->
+<!--            @keyframes pulse {-->
+<!--                0% { transform: scale(1); box-shadow: 0 0 12px rgba(79,70,229,0.8); }-->
+<!--                50% { transform: scale(1.1); box-shadow: 0 0 22px rgba(37,99,235,1); }-->
+<!--                100% { transform: scale(1); box-shadow: 0 0 12px rgba(79,70,229,0.8); }-->
+<!--            }-->
+<!--        </style>-->
+
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
     <script>
 
 
@@ -115,6 +183,67 @@
         });
     }
 });
+
+         // Show chatbot
+    document.getElementById("chatbot-btn").onclick = function () {
+        document.getElementById("chatbot-box").classList.remove("hidden");
+    };
+
+    // Close chatbot
+    document.getElementById("close-chatbot").onclick = function () {
+        document.getElementById("chatbot-box").classList.add("hidden");
+    };
+
+    // Send message
+    document.getElementById("send-btn").onclick = function () {
+        sendMessage();
+    };
+
+    // Enter key support
+    document.getElementById("chat-input").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") sendMessage();
+    });
+
+    function sendMessage() {
+        let input = document.getElementById("chat-input");
+        let message = input.value.trim();
+        if (message === "") return;
+
+        // User bubble
+        document.getElementById("chat-body").innerHTML += `
+            <div class="flex justify-end">
+                <div class="chat-bubble-user">${message}</div>
+            </div>
+        `;
+        input.value = "";
+
+        // Typing indicator
+        document.getElementById("typing").classList.remove("hidden");
+
+        fetch("/public/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "message=" + encodeURIComponent(message)
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("typing").classList.add("hidden");
+
+            // AI bubble
+            document.getElementById("chat-body").innerHTML += `
+                <div class="flex">
+                    <div class="chat-bubble-ai">${data.reply}</div>
+                </div>
+            `;
+
+            // Auto scroll
+            let chatBody = document.getElementById("chat-body");
+            chatBody.scrollTop = chatBody.scrollHeight;
+        });
+    }
     </script>
+
+
+
 </body>
 </html>

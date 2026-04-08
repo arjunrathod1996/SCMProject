@@ -40,18 +40,34 @@
 #COPY --from=build /app/target/*.jar app.jar
 #ENTRYPOINT ["java", "-jar", "app.jar"]
 
+# Stage 1: Build the application
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
+
+# 1. Cache Maven dependencies
 COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# 2. Copy source and build
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Stage 2: Run the JAR
-FROM eclipse-temurin:17-jdk-alpine
+# Stage 2: Run the application
+# 3. Use JRE instead of JDK for the runtime environment
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+
+# 4. Create a non-root user for better security
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
+
+# Copy the built JAR from the previous stage
 COPY --from=build /app/target/*.jar app.jar
 
-# ✅ Set Spring profile to prod so Railway DB is used
+# 5. Expose the port (Informational, adjust if not 8080)
+EXPOSE 8080
+
+# Set Spring profile to prod so Railway DB is used
 ENV SPRING_PROFILES_ACTIVE=prod
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
