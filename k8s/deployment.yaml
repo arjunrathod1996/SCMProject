@@ -42,14 +42,28 @@ spec:
       containers:
         - name: scm-app
           image: arjunrathod1996/scmproject-githubactions:latest
+
           ports:
             - containerPort: 8081
+
+          env:
+            # ✅ MySQL Config
             - name: SPRING_DATASOURCE_URL
               value: jdbc:mysql://mysql:3306/SCM
+
             - name: SPRING_DATASOURCE_USERNAME
               value: root
+
             - name: SPRING_DATASOURCE_PASSWORD
               value: root
+
+            # ✅ GROQ API KEY (from Kubernetes Secret)
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: groq-secret
+                  key: GROQ_API_KEY
+
 ---
 apiVersion: v1
 kind: Service

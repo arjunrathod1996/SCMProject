@@ -94,7 +94,7 @@ public class SecurityConfig {
         httpSecurity
             .cors().and().csrf().disable()
             .authorizeRequests()
-                .requestMatchers("/email/forgot", "/send-otp", "/oauth2/authorization/github/", "/oauth2/**", "/auth/", "/my_app/login", "/auth/**", "/auth/generate-otp", "/verify-otp", "/token", "/home", "/", "/about", "/login", "/register", "/css/**", "/images/**", "/js/**", "/error").permitAll()
+                .requestMatchers("/email/forgot", "/send-otp", "/oauth2/authorization/github/", "/oauth2/**", "/auth/", "/my_app/login", "/auth/**", "/auth/generate-otp", "/verify-otp", "/token", "/home", "/", "/about", "/login", "/register", "/css/**", "/images/**", "/js/**", "/error", "/public/chat").permitAll()
                 .anyRequest().authenticated()
             .and()
             .oauth2Login()

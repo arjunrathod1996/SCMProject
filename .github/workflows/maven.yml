@@ -158,7 +158,8 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
     services:
       mysql:
         image: mysql:8
