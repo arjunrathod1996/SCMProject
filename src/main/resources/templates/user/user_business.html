@@ -1,30 +1,23 @@
 <!DOCTYPE html>
 <html lang="en"  xmlns:th="http://www.thymeleaf.org" th:fragment="parent(content,title,script)">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport meta tag -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 
 <head>
     <title data-th-text="${user.getEmail()}">Profile Page</title>
 
-    <!-- Bootstrap Datepicker CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
 
-    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
 
-    <!-- DataTables Bootstrap 4 Integration CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
 
-    <!-- DataTables Select CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
     
-    <!-- Common CSS -->
    <link rel="stylesheet" th:href="@{/css/common.css}">
-   <!-- Font Awesome -->
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link
     href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
     rel="stylesheet">
-    <!-- Custom CSS -->
     <link rel="stylesheet" th:href="@{/css/custom.css}">
     <link rel="stylesheet" th:href="@{/css/sidebar.scss}">
     <link rel="stylesheet" th:href="@{/css/min.css}">
@@ -41,19 +34,13 @@
         </div>
    </div>
       
-    <!-- <div id="content"> -->
-        <div  class="container small_screen" id="responsiveContainer" >
-            <!-- Page Heading -->
+        <div  class="small_screen" id="responsiveContainer" >
             <div class="d-sm-flex align-items-center justify-content-between mb-4" >
                 <h1 class="h3 mb-0 text-gray-800 text-primary">Business</h1>
                 <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
                             class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
             </div>
-            <!-- ./Page Heading -->
-            <!-- Horizonatal Line -->
             <hr class="mt-0 mb-4">
-            <!-- ./Horizonatal Line -->
-            <!-- Search Data -->                
             <div class="d-flex flex-wrap align-items-center mb-4 small" >
                 <div class="form-group mb-2" style="width: 150px; margin-left: 5px; padding: 0;">
                     <div id="date_picker_start" class="input-group date">
@@ -91,8 +78,6 @@
                     </button>
                 </div>
             </div>
-            <!-- ./Search Data -->
-            <!-- Buttons -->
             <div class="d-sm-flex align-items-center justify-content-end mb-4 small">
                 <div class="btn-group btn-group-sm">
                     <button data-toggle="modal" onclick="showCreateForm()" class="btn btn-default btn-sm" title="Create Raffle Pot" style="border: 1px solid #ccc; border-radius: 5px;">
@@ -112,14 +97,7 @@
                     </button>
                 </div>
             </div>
-            <!-- ./Buttons -->
-            <!-- Table -->
             <div class=" d-flex flex-wrap align-items-center mb-4 small">
-                <!-- Card Header - Dropdown -->
-                <div class="card-header py-2 d-flex " style="margin-bottom: 10px;">
-                    <h6 class="m-0 font-weight-bold text-primary">Business Table</h6>
-                </div>
-                <!-- Card Body -->
                 <div class="table-responsive" style="overflow-x: auto;">
                     <table id="businessTable" class="table table-striped table-hover small" width="100%" cellspacing="0">
                         <thead>
@@ -135,7 +113,6 @@
                     </table>
                 </div>   
             </div>
-            <!-- Modal -->
             <div id="businessModal" class="modal fade "  tabindex="-1" role="dialog" aria-labelledby="businessModalLabel" aria-hidden="true" style="margin-top: 70px;">
                 <div class="modal-dialog" role="document" style="max-width: 500px;">
                     <div class="modal-content">
@@ -190,7 +167,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!--./row-->
                                 <div class="row">
                                     <div class="col-lg-12">
                                         <div class="form-group text-right">
@@ -208,19 +184,12 @@
         </div>
     </div>
 
-<!-- jQuery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
-<!-- Bootstrap JS (Optional) Important !!!--> 
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-<!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
 
-<!-- DataTables Bootstrap 4 Integration JS -->
-<!-- <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js"></script> -->
-
-<!-- DataTables Select JS -->
 <script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.standalone.min.css" integrity="sha512-D5/oUZrMTZE/y4ldsD6UOeuPR4lwjLnfNMWkjC0pffPTCVlqzcHTNvkn3dhL7C0gYifHQJAIrRTASbMvLmpEug==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -232,7 +201,6 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.standalone.min.css" integrity="sha512-t+00JqxGbnKSfg/4We7ulJjd3fGJWsleNNBSXRk9/3417ojFqSmkBfAJ/3+zpTFfGNZyKxPVGwWvaRuGdtpEEA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-<!-- Your custom scripts -->
 <script src="/js/script.js"></script> 
 <script src="/js/side.js"></script>
 <script src="/js/admin2.js"></script>
@@ -281,7 +249,7 @@ function setUpColumns() {
     var columns = [
         { data: "id", defaultContent: "","render": function (data, type, row) {
              return "<input class = 'hidden' class='dt-checkboxes' value = " + data + ">";
-         } },  // Placeholder for checkbox column
+         } },  
         { 
             data: "name", 
             render: function(data, type, row) {
@@ -339,7 +307,7 @@ function save() {
     var parms = '';
     
     if (id) {
-        parms = '?id=' + id; // Correct query parameter formatting
+        parms = '?id=' + id; 
     }
     
     url += parms;
@@ -404,7 +372,6 @@ function initModal(id) {
         statusAlert(null, null);
         $('#header_modal').text('Edit');
         $('#businessModal').modal('show');
-        // Populate modal fields with data
         $('#name').val(data.name);
         $('#fullName').val(data.fullName);
         $('#address').val(data.address);

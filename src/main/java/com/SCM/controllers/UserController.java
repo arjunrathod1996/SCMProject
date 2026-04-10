@@ -86,19 +86,14 @@ public class UserController {
     @Autowired
     LeadMainRepository leadMainRepository;
  
-   
-    
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     
-    private final String ACTIVITY_EXPORT_FILE_NAME = "Billing_Activity_%s.xlsx"; // Change the file extension to .xlsx
+    private final String ACTIVITY_EXPORT_FILE_NAME = "Billing_Activity_%s.xlsx";
 	private final String ACTIVITY_EXPORT_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
   
 	@GetMapping("/dashboard")    
     public String getUserDashboard(Authentication authentication, Model model) {
 	
-
-	   
-        
         logger.info("Attempting to access the /dashboard endpoint.");
         User user = commonService.getLoggedInUser();
         if (user == null) {
@@ -120,14 +115,8 @@ public class UserController {
         
         System.out.println(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> : " + leadCounts);
         
-        // Add the lead counts to the model
-      
-        
-        // Other model attributes and logic
-        
         return "user/user_dashboard";
     }
-
 
     @GetMapping("/dashboard/business")    
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
@@ -155,9 +144,6 @@ public class UserController {
         User user = commonService.getLoggedInUser();
         
         if (businessID != null) {
-            // Use the businessID parameter in your logic
-            // For example, you can pass it to your service layer to fetch relevant data
-            // Or you can add it to the model to make it available in your view
         	Business business = businessRepository.findById(businessID).get();
             model.addAttribute("businessID", businessID);
             model.addAttribute("config", business.getConfig());
@@ -178,7 +164,6 @@ public class UserController {
     }
     
     @GetMapping("/dashboard/merchant")    
-    //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public String createMerchant() {
     	 logger.info("Attempting to access the /dashboard/merchant_user endpoint.");
          User user = commonService.getLoggedInUser();
@@ -253,36 +238,23 @@ public class UserController {
         return "user/merchant_user";
     }
     
-    
-    
-    
-    
     @RequestMapping(value = "/profile")
     public String getUserProfile(Principal principal, Model model, Authentication authentication) {
-    	
-    	
-    	
     	 User user = commonService.getLoggedInUser();
-    	    
     	 List<BillingSummary> getBillingSummaryByUser = userService.getBillingSummaryByUser(user);
-    	 
     	   
-    	    StringBuilder result = new StringBuilder();
+    	 StringBuilder result = new StringBuilder();
 
-    	    result.append("Billing Summaries:\n");
-    	    for (BillingSummary billingSummary : getBillingSummaryByUser) {
-    	        result.append("ID: ").append(billingSummary.getId()).append(", Total Amount: ").append(billingSummary.getTotalAmount()).append("\n");
-    	    }
+    	 result.append("Billing Summaries:\n");
+    	 for (BillingSummary billingSummary : getBillingSummaryByUser) {
+    	     result.append("ID: ").append(billingSummary.getId()).append(", Total Amount: ").append(billingSummary.getTotalAmount()).append("\n");
+    	 }
 
-    	    result.append("\nRelated Merchant IDs:\n");
-    	   
-    	    System.out.println(" >>>>>>>>>>> : "  +result);
+    	 result.append("\nRelated Merchant IDs:\n");
+    	 System.out.println(" >>>>>>>>>>> : "  +result);
     	
         return"user/user_profile";
     }
-    
-    
-
     
     @RequestMapping(value="/dashboard/gallery", method = RequestMethod.GET)
     public String modelPhotos(Model model, Principal principal,
@@ -303,12 +275,9 @@ public class UserController {
         Merchant merchant = null;
         Merchant selectedMerchant = null;
 
-
-
         if (merchantID != null) {
             merchant = merchantRepository.findById(merchantID).get();
             business = merchant.getBusiness();
-           // photos = photoRepository.findByMerchantAndDeletedOrderBySequence(merchant, false);
             photos = photoRepository.findByBusinessIdAndMerchantId(businessID, merchantID);
             selectedMerchant = merchantRepository.findById(merchantID).orElse(null);
             for(Photo p : photos) {
@@ -325,7 +294,6 @@ public class UserController {
         if (merchantID != null)
             model.addAttribute(AttributeConsts.ATTR_MERCHANT_LIST, merchantRepository.findById(merchantID).get());
 
-       // model.addAttribute(AttributeConsts.ATTR_PHOTO_LIST, photos);
         model.addAttribute("photos_", photos);
         model.addAttribute(AttributeConsts.ATTR_BUSINESS, business);
         model.addAttribute("selectedMerchant", selectedMerchant);
@@ -333,10 +301,8 @@ public class UserController {
         List<Merchant> merchants = merchantRepository.findMerchantByActive(businessID);
         model.addAttribute("merchants",merchants);
         
-
         return "user/gallery";
     }
-    
     
     @RequestMapping(value="/dashboard/gallery_merchant", method = RequestMethod.GET)
     public String modelMerchantStaffPhotos(Model model, Principal principal,
@@ -355,18 +321,6 @@ public class UserController {
         Merchant merchant = null;
         User selectedMerchant = null;
 
-//        if (merchantID != null) {
-//            merchant = merchantRepository.findById(merchantID).get();
-//            photos = photoRepository.findByBusinessIdAndMerchantId(businessID, merchantID);
-//            
-//            if(merchantStaffLink != null) {
-//            	selectedMerchant = userRepository.findById(merchantStaffLink).orElse(null);
-//            }
-//          
-//            
-//        } 
-        
-        
         if (merchantStaffLink != null) {
             merchant = merchantRepository.findById(merchantID).get();
             photos = photoMerchantRepository.findByMerchantIdAndUserId(merchantID,merchantStaffLink);
@@ -389,7 +343,6 @@ public class UserController {
         model.addAttribute("merchants",merchants);
         model.addAttribute("merchant",merchant);
         
-
         return "user/my_gallery";
     }
     
@@ -402,7 +355,6 @@ public class UserController {
         String userRole = user.getRole() != null ? user.getRole().getName().name() : "UNKNOWN";
         return ResponseEntity.ok(userRole);
     }
-    
     
     @GetMapping("/dashboard/billSummary")    
     public String BillSummary(Model model) {
@@ -452,55 +404,6 @@ public class UserController {
     	
     }
     
-//    @RequestMapping(value = "/dashboard/export")
-//	public void exportActivity(HttpServletResponse response,
-//			Model model,Pageable pageable,
-//			@RequestParam(value = "name",required = false) String name,
-//			@RequestParam(value = "merchantID",required = false) Long  merchantID,
-//	         @RequestParam(value = "startDate", required = false) String startDate,
-//	         @RequestParam(value = "endDate", required = false) String endDate,
-//	         @RequestParam(value = "email", required = false) String email,
-//	         @RequestParam(value = "mobileNumber", required = false) String mobileNumber,
-//	         @RequestParam(value = "status", required = false) CartItemStatus status) throws IOException{
-//		
-//		User user = commonService.getLoggedInUser();
-//		
-//		Business business = user.getBusiness();
-//		
-//		response.setContentType(ACTIVITY_EXPORT_CONTENT_TYPE);
-//		String fileName = String.format(ACTIVITY_EXPORT_FILE_NAME, "dynamicValue");
-//		response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName +"\"");
-//		cartService.exportBillSummary(response.getOutputStream(),pageable, user,merchantID, name,email,mobileNumber,status,startDate,endDate);
-//	}
-    
-//    @RequestMapping(value = "/dashboard/export",method = RequestMethod.GET)
-//	@ResponseBody
-//    public void exportActivity(HttpServletResponse response,
-//                               Pageable pageable,
-//                               @RequestParam(value = "name", required = false) String name,
-//                               @RequestParam(value = "merchantID", required = false) Long merchantID,
-//                               @RequestParam(value = "startDate", required = false) String startDate,
-//                               @RequestParam(value = "endDate", required = false) String endDate,
-//                               @RequestParam(value = "email", required = false) String email,
-//                               @RequestParam(value = "mobileNumber", required = false) String mobileNumber,
-//                               @RequestParam(value = "status", required = false) CartItemStatus status) throws IOException {
-//        try {
-//            User user = commonService.getLoggedInUser();
-//            Business business = user.getBusiness();
-//
-//            response.setContentType(ACTIVITY_EXPORT_CONTENT_TYPE);
-//            String fileName = String.format(ACTIVITY_EXPORT_FILE_NAME, "dynamicValue");
-//            response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-//            cartService.exportBillSummary(response.getOutputStream(), pageable, user, merchantID, name, email, mobileNumber, status, startDate, endDate);
-//        } catch (Exception e) {
-//            logger.error("Error exporting activity: {}", e.getMessage(), e);
-//            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error exporting activity");
-//        }
-//    }
-    
-    
-    
-    
     @RequestMapping(value = "/dashboard/export", method = RequestMethod.GET)
     @ResponseBody
     public void exportActivity(HttpServletResponse response,
@@ -548,6 +451,5 @@ public class UserController {
          logger.info("Access granted. Proceeding with merchant_user logic for ROLE_ADMIN or ROLE_MERCHANT_ADMIN.");
         return "user/customer_pagewise";
     }
-
 
 }

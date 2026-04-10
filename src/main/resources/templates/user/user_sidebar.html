@@ -1,436 +1,233 @@
 <!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
-
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:th="http://www.thymeleaf.org"
-	
-	xmlns:sec="http://www.thymeleaf.org/extras/spring-security5"> <!--xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"-->
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security5"> 
 
-<body >
-
-    <!-- Page Wrapper -->
+<body>
     <div th:fragment="user_sidebar" id="wrapper">
+        <style>
+            /* Enterprise Sidebar Overrides */
+            .bg-gradient-primary { background: linear-gradient(180deg, #0f172a 10%, #1e293b 100%) !important; background-color: #0f172a !important; }
+            .sidebar-dark .nav-item .nav-link { color: #94a3b8 !important; }
+            .sidebar-dark .nav-item .nav-link:hover, .sidebar-dark .nav-item.active .nav-link { color: #ffffff !important; background-color: rgba(255, 255, 255, 0.05); }
+            .sidebar-dark .nav-item .nav-link i { color: #64748b !important; }
+            .sidebar-dark .nav-item .nav-link:hover i, .sidebar-dark .nav-item.active .nav-link i { color: #38bdf8 !important; }
+            .sidebar-dark .sidebar-heading { color: #475569 !important; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1rem;}
+            .sidebar-dark hr.sidebar-divider { border-top: 1px solid #334155; margin-bottom: 1rem;}
+            .sidebar .collapse-inner { background-color: #1e293b !important; border: 1px solid #334155 !important; border-radius: 0.5rem; margin-top: 0.5rem;}
+            .sidebar .collapse-inner .collapse-item { color: #94a3b8 !important; padding: 0.5rem 1rem; }
+            .sidebar .collapse-inner .collapse-item:hover { color: #ffffff !important; background-color: rgba(255, 255, 255, 0.05) !important; border-radius: 0.375rem; }
+            .sidebar .collapse-inner .collapse-item.active-sublink { color: #ffffff !important; background-color: #2563eb !important; font-weight: 600; border-radius: 0.375rem; }
+            .sidebar .collapse-inner .collapse-header { color: #cbd5e1 !important; font-weight: 600; }
+            
+            /* Sidebar Brand */
+            .sidebar-brand { display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; color: white; text-decoration: none; font-size: 1.5rem; font-weight: bold; letter-spacing: 0.05em; }
+            .sidebar-brand-icon { background: #2563eb; color: white; border-radius: 0.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4); }
 
-        <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar" style="position: fixed;z-index: 10000;top: 70px;">
+            /* Topbar Overrides */
+            .topbar { background-color: #ffffff !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important; }
+            .dropdown-menu { border: none !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important; border-radius: 0.5rem !important; }
+            .dropdown-item:hover { background-color: #f1f5f9 !important; color: #1e293b !important; }
+            .dropdown-item.text-danger:hover { background-color: #fee2e2 !important; color: #dc2626 !important; }
+            
+            /* Avatar Profile */
+            .avatar-circle { width: 32px; height: 32px; background-color: #e0e7ff; color: #4f46e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+            
+            /* Fix page content offset */
+            #content-wrapper { padding: 80px 20px 20px 20px; /* top right bottom left */ margin-left: 224px; width: calc(100% - 224px); box-sizing: border-box; transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out; }
+            .topbar.fixed-topbar { position: fixed; top: 0; left: 224px; right: 0; width: auto; z-index: 10000; max-width: none !important; transition: left 0.3s ease-in-out; }
+            
+            /* Desktop/Default behavior */
+            #accordionSidebar { position: fixed; z-index: 10001; top: 0; bottom: 0; height: 100vh; overflow-y: auto; width: 224px !important; transition: transform 0.3s ease-in-out; }
+            #accordionSidebar::-webkit-scrollbar { display: none; }
+            #accordionSidebar { -ms-overflow-style: none; scrollbar-width: none; }
+            .sidebar-backdrop { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 10000; opacity: 0; transition: opacity 0.3s ease-in-out; }
 
-            <!-- Sidebar - Brand -->
-           <!-- <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
+            /* Mobile behavior overrides */
+            @media (max-width: 768px) {
+                #content-wrapper {
+                    margin-left: 0;
+                    width: 100%;
+                    padding: 70px 10px 10px 10px;
+                }
+
+                .topbar.fixed-topbar {
+                    left: 0;
+                }
+                
+                #accordionSidebar {
+                    transform: translateX(-100%);
+                }
+                
+                #accordionSidebar.show-sidebar {
+                    transform: translateX(0);
+                }
+                
+                .sidebar-backdrop.show-backdrop {
+                    display: block;
+                    opacity: 1;
+                }
+            }
+            
+            /* Modal overrides */
+            .modal-content { border-radius: 0.75rem; border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+            .modal-header { border-bottom: 1px solid #f1f5f9; background-color: #ffffff; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; }
+            .modal-footer { border-top: 1px solid #f1f5f9; background-color: #f8fafc; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
+        </style>
+
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/user/dashboard">
+                <div class="sidebar-brand-icon">
+                    <i class="fas fa-cube"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup></div>
-            </a>-->
+                <div class="sidebar-brand-text mx-1">CRMPro</div>
+            </a>
 
-            <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link" th:href="@{'/user/dashboard'}">
+            <li class="nav-item">
+                <a class="nav-link mobile-link" th:href="@{'/user/dashboard'}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a> 
             </li>
 
-            <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
             <div class="sidebar-heading">
                 Interface
             </div>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">  <!---->
+            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-briefcase"></i>
+                    aria-expanded="false" aria-controls="collapseTwo">
+                    <i class="fas fa-fw fa-building"></i>
                     <span>Business</span>
                 </a>
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Business Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/business'}">Business</a>
-                        <!--<a class="collapse-item" th:href="@{'/user/dashboard/merchant'}">Merchant</a>-->
-                         <a class="collapse-item" th:href="@{'/user/dashboard/merchant_user'}">Merchant User</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/business'}">Business</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/merchant_user'}">Merchant User</a>
                     </div>
                 </div>
             </li>
             
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN','ROLE_ADMIN')">  <!---->
+            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN','ROLE_ADMIN')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#merchantCreate"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-store"></i>
+                    aria-expanded="false" aria-controls="merchantCreate">
+                   <i class="fas fa-fw fa-store-alt"></i>
                     <span>Merchant Create</span>
                 </a>
                 <div id="merchantCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Merchant Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/merchant'}">Merchant</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/merchant'}">Merchant</a>
                     </div>
                 </div>
             </li>
             
-             
-            <!-- Nav Item - Location Collapse Menu -->
-            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">  <!---->
+            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#location"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-map-marker-alt"></i>
+                    aria-expanded="false" aria-controls="location">
+                   <i class="fas fa-fw fa-globe-americas"></i>
                     <span>Location</span>
                 </a>
                 <div id="location" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Location Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/country'}">Country</a>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/region'}">Region</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/country'}">Country</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/region'}">Region</a>
                     </div>
                 </div>
             </li>
             
-            <!-- Nav Item - Gallery Collapse Menu -->
-            <!--<li class="nav-item" >  
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#gallery"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>Gallery</span>
-                </a>
-                <div id="gallery" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Gallery Activity:</h6>
-                        <a sec:authorize="hasAnyAuthority('ROLE_ADMIN')" class="collapse-item" th:href="@{'/user/dashboard/gallery'}">Gallery</a>
-                        <a sec:authorize="hasAnyAuthority('ROLE_ADMIN')" class="collapse-item" th:href="@{'/user/dashboard/gallery'}">Gallery</a>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/region'}">Region</a>
-                    </div>
-                </div>
-            </li>-->
-            
-            
-             <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_STAFF')">  <!---->
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#leadsCreate"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-store"></i>
+            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_STAFF')">  
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#customerCreate"
+                    aria-expanded="false" aria-controls="customerCreate">
+                   <i class="fas fa-fw fa-users"></i>
                     <span>Customer</span>
                 </a>
-                <div id="leadsCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div id="customerCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Customer Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/customer'}">Customer</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/customer'}">Customer</a>
                     </div>
                 </div>
             </li>
             
-            
-             <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN','ROLE_MERCHANT_STAFF')">  <!---->
+            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN','ROLE_MERCHANT_STAFF')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#leadsCreate"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-store"></i>
+                    aria-expanded="false" aria-controls="leadsCreate">
+                   <i class="fas fa-fw fa-bullseye"></i>
                     <span>Leads</span>
                 </a>
                 <div id="leadsCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Leads Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/leads'}">Leads</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/leads'}">Leads</a>
                     </div>
                 </div>
             </li>
 
-             <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN')">  <!---->
+             <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#faqCreate"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-store"></i>
+                    aria-expanded="false" aria-controls="faqCreate">
+                   <i class="fas fa-fw fa-question-circle"></i>
                     <span>FAQ</span>
                 </a>
                 <div id="faqCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">FAQ Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/faqlist'}">FAQ List</a>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/faq'}">FAQ</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/faqlist'}">FAQ List</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/faq'}">FAQ</a>
                     </div>
                 </div>
             </li>
 
-            <!-- Divider -->
             <hr class="sidebar-divider">
             
-            
-            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN')">  <!---->
+            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#billCreate"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-store"></i>
+                    aria-expanded="false" aria-controls="billCreate">
+                   <i class="fas fa-fw fa-file-invoice-dollar"></i>
                     <span>Customer Bill Summary</span>
                 </a>
                 <div id="billCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
 						<h6 class="collapse-header">Insight:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/bill/insight'}">Insight</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/bill/insight'}">Insight</a>
                         <h6 class="collapse-header">Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/billSummary'}">Bill</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/billSummary'}">Bill</a>
                     </div>
                 </div>
             </li>
 
-            <!-- Heading -->
-           <!-- <div class="sidebar-heading">
-                Addons
-            </div>-->
-
-            <!-- Nav Item - Pages Collapse Menu -->
-           <!-- <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-                    aria-expanded="true" aria-controls="collapsePages">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Pages</span>
-                </a>
-                <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Login Screens:</h6>
-                        <a class="collapse-item" href="login.html">Login</a>
-                        <a class="collapse-item" href="register.html">Register</a>
-                        <a class="collapse-item" href="forgot-password.html">Forgot Password</a>
-                        <div class="collapse-divider"></div>
-                        <h6 class="collapse-header">Other Pages:</h6>
-                        <a class="collapse-item" href="404.html">404 Page</a>
-                        <a class="collapse-item" href="blank.html">Blank Page</a>
-                    </div>
-                </div>
-            </li>-->
-
-            <!-- Nav Item - Charts -->
-           <!-- <li class="nav-item">
-                <a class="nav-link" href="charts.html">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
-            </li>-->
-
-            <!-- Nav Item - Tables -->
-           <!-- <li class="nav-item">
-                <a class="nav-link" href="tables.html">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
-            </li>-->
-
-            <!-- Divider -->
-           <!-- <hr class="sidebar-divider d-none d-md-block">-->
-
-            <!-- Sidebar Toggler (Sidebar) -->
-            <!--<div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>-->
-
-            <!-- Sidebar Message -->
-            <!--<div class="sidebar-card d-none d-lg-flex">
-                <img class="sidebar-card-illustration mb-2" src="img/undraw_rocket.svg" alt="...">
-                <p class="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>
-                <a class="btn btn-success btn-sm" href="https://startbootstrap.com/theme/sb-admin-pro">Upgrade to Pro!</a>
-            </div>-->
-
         </ul>
-        <!-- End of Sidebar -->
 
-        <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content" style="background-color: #f8fafc;">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 fixed-topbar shadow">
 
-            <!-- Main Content -->
-            <div id="content" style="background-color: white;">
-
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow" style="position: fixed;top: 0;max-width: 100%;z-index: 10000;">
-
-                    <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
+                        <i class="fa fa-bars text-indigo-600"></i>
                     </button>
 
-                    <!-- Topbar Search -->
-                    <!--<form
-                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                                aria-label="Search" aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>-->
-                    
-                    <!--<form id="search-form" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-        <div class="input-group">
-            <input type="text" id="search-input" class="form-control bg-light border-0 small" placeholder="Search for..."
-                aria-label="Search" aria-describedby="basic-addon2">
-            <div class="input-group-append">
-                <button class="btn btn-primary" type="button" id="search-button">
-                    <i class="fas fa-search fa-sm"></i>
-                </button>
-            </div>
-        </div>
-    </form>-->
-
-                    <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
-
-                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <!--<li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-search fa-fw"></i>
-                            </a>
-                             Dropdown - Messages 
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Search for..." aria-label="Search"
-                                            aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </li>-->
-
-                        <!-- Nav Item - Alerts -->
-                        <!--<li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-bell fa-fw"></i>
-                                 Counter - Alerts 
-                                <span class="badge badge-danger badge-counter">3+</span>
-                            </a>
-                             Dropdown - Alerts 
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Alerts Center
-                                </h6>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-success">
-                                            <i class="fas fa-donate text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 7, 2019</div>
-                                        $290.29 has been deposited into your account!
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-warning">
-                                            <i class="fas fa-exclamation-triangle text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 2, 2019</div>
-                                        Spending Alert: We've noticed unusually high spending for your account.
-                                    </div>
-                                </a>
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
-                            </div>
-                        </li>-->
-
-                        <!-- Nav Item - Messages -->
-                       <!-- <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-envelope fa-fw"></i>
-                                 Counter - Messages 
-                                <span class="badge badge-danger badge-counter">7</span>
-                            </a>
-                             Dropdown - Messages 
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">
-                                    Message Center
-                                </h6>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">Hi there! I am wondering if you can help me with a
-                                            problem I've been having.</div>
-                                        <div class="small text-gray-500">Emily Fowler · 58m</div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg"
-                                            alt="...">
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">I have the photos that you ordered last month, how
-                                            would you like them sent to you?</div>
-                                        <div class="small text-gray-500">Jae Chun · 1d</div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg"
-                                            alt="...">
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Last month's report looks great, I am very happy with
-                                            the progress so far, keep up the good work!</div>
-                                        <div class="small text-gray-500">Morgan Alvarez · 2d</div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Am I a good boy? The reason I ask is because someone
-                                            told me that people say this to all dogs, even if they aren't good...</div>
-                                        <div class="small text-gray-500">Chicken the Dog · 2w</div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
-                            </div>
-                        </li>
--->
                         <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small" th:text="${user.getEmail()}">Douglas McGee</span>
-                                <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small font-weight-bold" th:text="${user != null ? user.getEmail() : 'User'}">Douglas McGee</span>
+                                <div class="avatar-circle">
+                                    <i class="fas fa-user"></i>
+                                </div>
                             </a>
-                            <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="#">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    <span th:text="${user != null && user.getFirstName() != null ? user.getFirstName() : '' }">Profile</span>
+                                    <span th:text="${user != null && user.getFirstName() != null ? user.getFirstName() : 'Profile' }">Profile</span>
                                 </a>
                                 <a class="dropdown-item" href="#">
                                     <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -441,49 +238,150 @@
                                     Activity Log
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                <a class="dropdown-item text-danger font-weight-bold" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-danger"></i>
                                     Logout
                                 </a>
                             </div>
                         </li>
-
                     </ul>
-
                 </nav>
-                <!-- End of Topbar -->
-
-                <!-- Begin Page Content -->
                 
-                <!-- End of Page Wrapper -->
-
-    <!-- Scroll to Top Button-->
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
 
-    <!-- Logout Modal-->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true" style="top:80px">
+        aria-hidden="true" style="top:80px; z-index: 100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <h5 class="modal-title font-weight-bold text-gray-800" id="exampleModalLabel">Ready to Leave?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-body text-gray-600">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" th:href="@{'/logout'}">Logout</a>
-                    
+                    <button class="btn btn-light" type="button" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-danger px-4" th:href="@{'/logout'}">Logout</a>
                 </div>
             </div>
         </div>
     </div>
 
-    
-	
+    <!-- Script to automatically open and highlight the active sidebar menu -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Get current URL path
+            var currentUrl = window.location.pathname;
+            
+            // Find all collapse items
+            var collapseItems = document.querySelectorAll('.collapse-item');
+            var matched = false;
+
+            collapseItems.forEach(function(item) {
+                var itemHref = item.getAttribute('href');
+                if (itemHref && currentUrl.includes(itemHref)) {
+                    // Match found
+                    matched = true;
+                    // Add active class to sublink
+                    item.classList.add('active-sublink');
+                    
+                    // Find parent collapse container and open it
+                    var collapseContainer = item.closest('.collapse');
+                    if (collapseContainer) {
+                        collapseContainer.classList.add('show');
+                        // Find parent nav-item and set it to active
+                        var navItem = collapseContainer.closest('.nav-item');
+                        if (navItem) {
+                            navItem.classList.add('active');
+                            var navLink = navItem.querySelector('.nav-link');
+                            if (navLink) {
+                                navLink.classList.remove('collapsed');
+                                navLink.setAttribute('aria-expanded', 'true');
+                            }
+                        }
+                    }
+                }
+            });
+
+            // If no submenu is matched, check main nav links like Dashboard
+            if (!matched) {
+                var navLinks = document.querySelectorAll('.nav-item > .nav-link:not(.collapsed)');
+                navLinks.forEach(function(link) {
+                    var href = link.getAttribute('href');
+                    if (href && currentUrl === href) {
+                        var navItem = link.closest('.nav-item');
+                        if (navItem) navItem.classList.add('active');
+                    }
+                });
+            }
+
+            // Mobile sidebar toggle logic
+            var sidebarToggleBtn = document.getElementById('sidebarToggleTop');
+            var sidebar = document.getElementById('accordionSidebar');
+            var backdrop = document.getElementById('sidebarBackdrop');
+
+            if (sidebarToggleBtn && sidebar && backdrop) {
+                // Ensure proper initial state for mobile
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('show-sidebar');
+                    backdrop.classList.remove('show-backdrop');
+                }
+
+                function toggleSidebar(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    
+                    // Check if it's currently shown
+                    var isShown = sidebar.classList.contains('show-sidebar');
+                    
+                    if (isShown) {
+                        // Hide it
+                        sidebar.classList.remove('show-sidebar');
+                        backdrop.classList.remove('show-backdrop');
+                    } else {
+                        // Show it
+                        sidebar.classList.add('show-sidebar');
+                        backdrop.classList.add('show-backdrop');
+                    }
+                }
+
+                // Remove existing listeners and add fresh ones
+                sidebarToggleBtn.onclick = null;
+                backdrop.onclick = null;
+                
+                sidebarToggleBtn.addEventListener('click', toggleSidebar, false);
+                backdrop.addEventListener('click', toggleSidebar, false);
+
+                // Auto-close on mobile when a link is clicked
+                var mobileLinks = document.querySelectorAll('.mobile-link');
+                mobileLinks.forEach(function(link) {
+                    link.addEventListener('click', function(e) {
+                        // We do NOT prevent default here so the navigation still happens
+                        if (window.innerWidth <= 768) {
+                            // Delay slightly to let the transition begin before navigating
+                            setTimeout(function() {
+                                sidebar.classList.remove('show-sidebar');
+                                backdrop.classList.remove('show-backdrop');
+                            }, 50);
+                        }
+                    });
+                });
+                
+                // Handle window resize to reset states if moving from mobile to desktop
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        sidebar.classList.remove('show-sidebar');
+                        backdrop.classList.remove('show-backdrop');
+                    }
+                });
+            }
+        });
+    </script>
+</div>
 </body>
 </html>

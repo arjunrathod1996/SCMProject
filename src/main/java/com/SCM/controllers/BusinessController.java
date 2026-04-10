@@ -73,11 +73,10 @@ public class BusinessController {
     
     @GetMapping("/business/delete")
 	@ResponseBody
-	public ResponseEntity<?> deleteBusiness(@RequestParam(value = "id")Long id){
+	public ResponseEntity<?> deleteBusiness(@RequestParam(value = "id") Long id){
     	businessService.deleteBusiness(id);
     	logger.debug("Deleted Business : {} ",id);
 		return new ResponseEntity<String>("{}",HttpStatus.OK);
-		
 	}
 
     @RequestMapping(value = "/business", method = RequestMethod.GET)
@@ -98,22 +97,15 @@ public class BusinessController {
         }
     }
     
-//    @RequestMapping(value="/business/search", method = RequestMethod.GET)
-//   	public List<Business> searchCity(@RequestParam(value = "name", required = false) String name){
-//    	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  : " + name);
-//   		List<Business> business = null;
-//   		business = businessRepository.findByName(name);
-//   		return business;
-//   	}
     @RequestMapping(value = "/business/search", method = RequestMethod.GET)
     public ResponseEntity<List<Business>> searchCity(@RequestParam(value = "name") String name) {
         logger.info("Business found with name: {}", name);
         System.out.println("Searching for business with name: " + name);
         List<Business> businesses = businessRepository.findByName(name);
         if (businesses == null || businesses.isEmpty()) {
-            return ResponseEntity.noContent().build(); // Return 204 No Content if no businesses are found
+            return ResponseEntity.noContent().build(); 
         }
-        return ResponseEntity.ok(businesses); // Return 200 OK with the list of businesses
+        return ResponseEntity.ok(businesses); 
     }
     
     @RequestMapping(value = "/business/config", method = RequestMethod.POST)

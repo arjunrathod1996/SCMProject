@@ -104,61 +104,6 @@ public class MerchantController {
         }
     }
 	
-	
-	/*@PostMapping("/merchant/user")
-    public ResponseEntity<User> saveMerchantUser(@RequestBody User user, @RequestParam(value = "id", required = false) Long id,
-    		@RequestParam(value = "businessID", required = false) Long businessID,
-    		@RequestParam(value = "merchantID", required = false) Long merchantID) {
-        logger.info("Received request to save merchant user with ID: {}", id);
-        if (user == null) {
-            logger.error("Invalid input received. Request body is null.");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        if (id != null) {
-            user.setId(id);
-            logger.info("Received merchant ID as a parameter: {}", id);
-        }
-
-        User savedUser = merchantService.saveMerchantUser(user,businessID,merchantID);
-        if (savedUser != null) {
-            logger.info("Merchant saved successfully with ID: {}", savedUser.getId());
-            return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
-        } else {
-            logger.error("Failed to save business.");
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }*/
-	
-	/*@PostMapping("/merchant/user")
-    public ResponseEntity<?> saveMerchantUser(@RequestBody User user, @RequestParam(value = "id", required = false) Long id,
-                                              @RequestParam(value = "businessID", required = false) Long businessID,
-                                              @RequestParam(value = "merchantID", required = false) Long merchantID) {
-        logger.info("Received request to save merchant user with ID: {}", id);
-        if (user == null) {
-            logger.error("Invalid input received. Request body is null.");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        if (id != null) {
-            user.setId(id);
-            logger.info("Received merchant ID as a parameter: {}", id);
-        }
-
-        try {
-            User savedUser = merchantService.saveMerchantUser(user, businessID, merchantID);
-            logger.info("Merchant saved successfully with ID: {}", savedUser.getId());
-            return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
-        } catch (EmailAlreadyExistsException e) {
-            logger.error("Failed to save business: {}", e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
-        } catch (Exception e) {
-            logger.error("An unexpected error occurred: {}", e.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }*/ 
-	
-	
 	@PostMapping("/merchant/user")
 	public ResponseEntity<?> saveMerchantUser(@RequestBody User user, @RequestParam(value = "id", required = false) Long id,
 	        @RequestParam(value = "businessID", required = false) Long businessID,
@@ -190,7 +135,6 @@ public class MerchantController {
 	    }
 	}
 
-	
 	@RequestMapping(value="/merchant/search", method = RequestMethod.GET)
    	public List<Merchant> searchMerchant(@RequestParam(value = "name") String name){
    		List<Merchant> merchant = null;
@@ -200,33 +144,19 @@ public class MerchantController {
 	
 	@PostMapping("/merchant/search/store")
     public ResponseEntity<List<Merchant>> searchMerchantsByLocation(@RequestBody LocationDetails locationDetails) {
-        // Process the received location details
         System.out.println("Received location details:");
         System.out.println("Country: " + locationDetails.getCountry());
         System.out.println("State: " + locationDetails.getState());
         System.out.println("City: " + locationDetails.getCity());
 
-     // Search for merchants based on the provided location details
         List<Merchant> merchants = merchantRepository.findMerchantsByLocation(locationDetails.getCountry(),
         		locationDetails.getState(),
         		locationDetails.getCity());
         
-        
         merchants.stream().forEach((itr) -> System.out.println(itr.getShortLink()));
 
-        // Retrieve users associated with the found merchants
-//        List<User> users = new ArrayList<>();
-//        for (Merchant merchant : merchants) {
-//            List<User> usersForMerchant = userRepository.findUsersByMerchant(merchant);
-//            users.addAll(usersForMerchant);
-//        }
-
-        // Return a success response
-        //return ResponseEntity.ok().build();
-        
         return ResponseEntity.ok().body(merchants);
     }
-	
 	
 	 @RequestMapping(value = "/merchant", method = RequestMethod.GET)
 	    public ResponseEntity<?> getMerchantById(@RequestParam Long id) {
