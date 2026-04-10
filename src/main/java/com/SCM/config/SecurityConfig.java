@@ -54,11 +54,6 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-
-   /* @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
-        return new CustomAccessDeniedHandler();
-    }*/ 
     
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
@@ -102,7 +97,7 @@ public class SecurityConfig {
             .and()
             .logout()
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login") // Redirect to login page after logout
+                .logoutSuccessUrl("/login")
                 .invalidateHttpSession(true)  
                 .deleteCookies("JSESSIONID", "token")
             .and()
@@ -117,7 +112,6 @@ public class SecurityConfig {
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 .accessDeniedHandler((request, response, accessDeniedException) -> response.sendRedirect("/error"));
 
-        // Set cache control headers to prevent browser caching of secured pages
         httpSecurity.headers().cacheControl().disable();
         logger.info("HttpSecurity configured.");
         return httpSecurity.build();
@@ -148,8 +142,3 @@ public class SecurityConfig {
         };
     }
 }
-
-
-
-
-

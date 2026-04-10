@@ -20,19 +20,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-
 @Controller
 public class PageController {
 	
 	@Autowired
 	RoleRepository roleRepository;
+	
 	@Autowired
 	UserServiceImpl userService;	
 
-	
 	@GetMapping("/home")
 	public String home(Model model) {
-		 
 		model.addAttribute("hideLinks", false); 
 		return "home";
 	}
@@ -69,14 +67,12 @@ public class PageController {
 	@PostMapping("/do_register")
 	public String doRegister(@ModelAttribute UserForm userForm, HttpSession session) {
 	    try {
-	        // Check if passwords match
 	        if (!userForm.getPassword().equals(userForm.getRepeatPassword())) {
 	            session.setAttribute("message", "Passwords do not match.");
 	            session.setAttribute("alertType", "error");
-	            return "redirect:/register"; // Redirect back to registration page
+	            return "redirect:/register"; 
 	        }
 	
-	        // If passwords match, proceed with registration
 	        User user = new User();
 	        user.setLastName(userForm.getLastName());
 	        user.setFirstName(userForm.getFirstName());
@@ -91,7 +87,7 @@ public class PageController {
 	            userRole = roleRepository.save(userRole);
 	        }
 	        user.setRole(userRole);
-	        userService.saveUser(user); // Save the user using a service layer
+	        userService.saveUser(user); 
 	        session.setAttribute("message", "Registration successful!");
 	        session.setAttribute("alertType", "success");
 	    } catch (Exception e) {
@@ -112,7 +108,6 @@ public class PageController {
 
     @GetMapping("/protected-page")
     public String protectedPage() {
-        return "redirect:/login"; // Redirect to login page if user tries to access protected page after logout
+        return "redirect:/login"; 
     }
-	
 }
