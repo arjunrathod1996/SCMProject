@@ -54,8 +54,6 @@ public class RootController {
         } else {
             logger.error("User not found with email: {}", username);
             model.addAttribute("user", null);
-            // Handle user not found scenario
-            // For example, you might redirect to an error page or show a message on the current page
         }
         
         User loggedInUser = commonService.getLoggedInUser();
@@ -63,19 +61,11 @@ public class RootController {
 
         if (loggedInUser != null) {
             if (loggedInUser.getPhoneNumber() != null) {
-                // If the user is logged in with a phone number
                 List<Customer> customers = customerRepository.findByMobileNumber(loggedInUser.getPhoneNumber());
                 if (!customers.isEmpty()) {
-                    // Assuming there is only one customer per phone number
                     customer = customers.get(0);
                 }
             } else if (loggedInUser.getEmail() != null) {
-                // If the user is logged in with an email
-//                List<Customer> customers = customerRepository.findByEmail(user.getEmail());
-//                if (!customers.isEmpty()) {
-//                    // Assuming there is only one customer per email
-//                    customer = customers.get(0);
-//                }
             	customer = customerRepository.findByEmail(loggedInUser.getEmail()).orElse(null);
             }
             
