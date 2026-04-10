@@ -1,19 +1,73 @@
 <!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
-
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:th="http://www.thymeleaf.org"
-	
 	xmlns:sec="http://www.thymeleaf.org/extras/spring-security5"> 
 
-<body >
-
+<body>
     <div th:fragment="user_sidebar" id="wrapper">
+        <style>
+            /* Enterprise Sidebar Overrides */
+            .bg-gradient-primary { background: linear-gradient(180deg, #0f172a 10%, #1e293b 100%) !important; background-color: #0f172a !important; }
+            .sidebar-dark .nav-item .nav-link { color: #94a3b8 !important; }
+            .sidebar-dark .nav-item .nav-link:hover, .sidebar-dark .nav-item.active .nav-link { color: #ffffff !important; background-color: rgba(255, 255, 255, 0.05); }
+            .sidebar-dark .nav-item .nav-link i { color: #64748b !important; }
+            .sidebar-dark .nav-item .nav-link:hover i, .sidebar-dark .nav-item.active .nav-link i { color: #38bdf8 !important; }
+            .sidebar-dark .sidebar-heading { color: #475569 !important; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1rem;}
+            .sidebar-dark hr.sidebar-divider { border-top: 1px solid #334155; margin-bottom: 1rem;}
+            .sidebar .collapse-inner { background-color: #1e293b !important; border: 1px solid #334155 !important; border-radius: 0.5rem; margin-top: 0.5rem;}
+            .sidebar .collapse-inner .collapse-item { color: #94a3b8 !important; padding: 0.5rem 1rem; }
+            .sidebar .collapse-inner .collapse-item:hover { color: #ffffff !important; background-color: rgba(255, 255, 255, 0.05) !important; border-radius: 0.375rem; }
+            .sidebar .collapse-inner .collapse-item.active-sublink { color: #ffffff !important; background-color: #2563eb !important; font-weight: 600; border-radius: 0.375rem; }
+            .sidebar .collapse-inner .collapse-header { color: #cbd5e1 !important; font-weight: 600; }
+            
+            /* Sidebar Brand */
+            .sidebar-brand { display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; color: white; text-decoration: none; font-size: 1.5rem; font-weight: bold; letter-spacing: 0.05em; }
+            .sidebar-brand-icon { background: #2563eb; color: white; border-radius: 0.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4); }
 
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar" style="position: fixed;z-index: 10000;top: 70px;">
+            /* Topbar Overrides */
+            .topbar { background-color: #ffffff !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important; }
+            .dropdown-menu { border: none !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important; border-radius: 0.5rem !important; }
+            .dropdown-item:hover { background-color: #f1f5f9 !important; color: #1e293b !important; }
+            .dropdown-item.text-danger:hover { background-color: #fee2e2 !important; color: #dc2626 !important; }
+            
+            /* Avatar Profile */
+            .avatar-circle { width: 32px; height: 32px; background-color: #e0e7ff; color: #4f46e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+            
+            /* Fix page content offset */
+            #content-wrapper { padding: 80px 20px 20px 20px; /* top right bottom left */ margin-left: 224px; width: calc(100% - 224px); box-sizing: border-box; }
+            .topbar.fixed-topbar { position: fixed; top: 0; left: 224px; right: 0; width: auto; z-index: 10000; max-width: none !important; }
+            @media (max-width: 768px) {
+    #content-wrapper {
+        margin-left: 0;
+        width: 100%;
+        padding: 70px 10px 10px 10px;
+    }
+
+    .topbar.fixed-topbar {
+        left: 0;
+    }
+}
+            #accordionSidebar { position: fixed; z-index: 10001; top: 0; bottom: 0; height: 100vh; overflow-y: auto; width: 224px !important; }
+            #accordionSidebar::-webkit-scrollbar { display: none; }
+            #accordionSidebar { -ms-overflow-style: none; scrollbar-width: none; }
+            
+            /* Modal overrides */
+            .modal-content { border-radius: 0.75rem; border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+            .modal-header { border-bottom: 1px solid #f1f5f9; background-color: #ffffff; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; }
+            .modal-footer { border-top: 1px solid #f1f5f9; background-color: #f8fafc; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
+        </style>
+
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/user/dashboard">
+                <div class="sidebar-brand-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <div class="sidebar-brand-text mx-1">CRMPro</div>
+            </a>
 
             <hr class="sidebar-divider my-0">
 
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" th:href="@{'/user/dashboard'}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a> 
@@ -27,23 +81,23 @@
 
             <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-briefcase"></i>
+                    aria-expanded="false" aria-controls="collapseTwo">
+                    <i class="fas fa-fw fa-building"></i>
                     <span>Business</span>
                 </a>
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Business Activity:</h6>
                         <a class="collapse-item" th:href="@{'/user/dashboard/business'}">Business</a>
-                         <a class="collapse-item" th:href="@{'/user/dashboard/merchant_user'}">Merchant User</a>
+                        <a class="collapse-item" th:href="@{'/user/dashboard/merchant_user'}">Merchant User</a>
                     </div>
                 </div>
             </li>
             
             <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN','ROLE_ADMIN')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#merchantCreate"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-store"></i>
+                    aria-expanded="false" aria-controls="merchantCreate">
+                   <i class="fas fa-fw fa-store-alt"></i>
                     <span>Merchant Create</span>
                 </a>
                 <div id="merchantCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
@@ -54,11 +108,10 @@
                 </div>
             </li>
             
-             
             <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#location"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-map-marker-alt"></i>
+                    aria-expanded="false" aria-controls="location">
+                   <i class="fas fa-fw fa-globe-americas"></i>
                     <span>Location</span>
                 </a>
                 <div id="location" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
@@ -70,14 +123,13 @@
                 </div>
             </li>
             
-            
-             <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_STAFF')">  
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#leadsCreate"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-store"></i>
+            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_STAFF')">  
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#customerCreate"
+                    aria-expanded="false" aria-controls="customerCreate">
+                   <i class="fas fa-fw fa-users"></i>
                     <span>Customer</span>
                 </a>
-                <div id="leadsCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div id="customerCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Customer Activity:</h6>
                         <a class="collapse-item" th:href="@{'/user/dashboard/customer'}">Customer</a>
@@ -85,11 +137,10 @@
                 </div>
             </li>
             
-            
-             <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN','ROLE_MERCHANT_STAFF')">  
+            <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN','ROLE_MERCHANT_STAFF')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#leadsCreate"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-store"></i>
+                    aria-expanded="false" aria-controls="leadsCreate">
+                   <i class="fas fa-fw fa-bullseye"></i>
                     <span>Leads</span>
                 </a>
                 <div id="leadsCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
@@ -102,8 +153,8 @@
 
              <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#faqCreate"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-store"></i>
+                    aria-expanded="false" aria-controls="faqCreate">
+                   <i class="fas fa-fw fa-question-circle"></i>
                     <span>FAQ</span>
                 </a>
                 <div id="faqCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
@@ -117,11 +168,10 @@
 
             <hr class="sidebar-divider">
             
-            
             <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_MERCHANT_ADMIN')">  
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#billCreate"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                   <i class="fas fa-fw fa-store"></i>
+                    aria-expanded="false" aria-controls="billCreate">
+                   <i class="fas fa-fw fa-file-invoice-dollar"></i>
                     <span>Customer Bill Summary</span>
                 </a>
                 <div id="billCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
@@ -135,32 +185,30 @@
             </li>
 
         </ul>
+
         <div id="content-wrapper" class="d-flex flex-column">
-
-            <div id="content" style="background-color: white;">
-
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow" style="position: fixed;top: 0;max-width: 100%;z-index: 10000;">
+            <div id="content" style="background-color: #f8fafc;">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 fixed-topbar shadow">
 
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
+                        <i class="fa fa-bars text-indigo-600"></i>
                     </button>
 
                     <ul class="navbar-nav ml-auto">
-
                         <div class="topbar-divider d-none d-sm-block"></div>
-
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small" th:text="${user.getEmail()}">Douglas McGee</span>
-                                <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small font-weight-bold" th:text="${user != null ? user.getEmail() : 'User'}">Douglas McGee</span>
+                                <div class="avatar-circle">
+                                    <i class="fas fa-user"></i>
+                                </div>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="#">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    <span th:text="${user != null && user.getFirstName() != null ? user.getFirstName() : '' }">Profile</span>
+                                    <span th:text="${user != null && user.getFirstName() != null ? user.getFirstName() : 'Profile' }">Profile</span>
                                 </a>
                                 <a class="dropdown-item" href="#">
                                     <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -171,15 +219,13 @@
                                     Activity Log
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                <a class="dropdown-item text-danger font-weight-bold" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-danger"></i>
                                     Logout
                                 </a>
                             </div>
                         </li>
-
                     </ul>
-
                 </nav>
                 
     <a class="scroll-to-top rounded" href="#page-top">
@@ -187,26 +233,73 @@
     </a>
 
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true" style="top:80px">
+        aria-hidden="true" style="top:80px; z-index: 100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <h5 class="modal-title font-weight-bold text-gray-800" id="exampleModalLabel">Ready to Leave?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-body text-gray-600">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" th:href="@{'/logout'}">Logout</a>
-                    
+                    <button class="btn btn-light" type="button" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-danger px-4" th:href="@{'/logout'}">Logout</a>
                 </div>
             </div>
         </div>
     </div>
 
-    
-	
+    <!-- Script to automatically open and highlight the active sidebar menu -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Get current URL path
+            var currentUrl = window.location.pathname;
+            
+            // Find all collapse items
+            var collapseItems = document.querySelectorAll('.collapse-item');
+            var matched = false;
+
+            collapseItems.forEach(function(item) {
+                var itemHref = item.getAttribute('href');
+                if (itemHref && currentUrl.includes(itemHref)) {
+                    // Match found
+                    matched = true;
+                    // Add active class to sublink
+                    item.classList.add('active-sublink');
+                    
+                    // Find parent collapse container and open it
+                    var collapseContainer = item.closest('.collapse');
+                    if (collapseContainer) {
+                        collapseContainer.classList.add('show');
+                        // Find parent nav-item and set it to active
+                        var navItem = collapseContainer.closest('.nav-item');
+                        if (navItem) {
+                            navItem.classList.add('active');
+                            var navLink = navItem.querySelector('.nav-link');
+                            if (navLink) {
+                                navLink.classList.remove('collapsed');
+                                navLink.setAttribute('aria-expanded', 'true');
+                            }
+                        }
+                    }
+                }
+            });
+
+            // If no submenu is matched, check main nav links like Dashboard
+            if (!matched) {
+                var navLinks = document.querySelectorAll('.nav-item > .nav-link:not(.collapsed)');
+                navLinks.forEach(function(link) {
+                    var href = link.getAttribute('href');
+                    if (href && currentUrl === href) {
+                        var navItem = link.closest('.nav-item');
+                        if (navItem) navItem.classList.add('active');
+                    }
+                });
+            }
+        });
+    </script>
+</div>
 </body>
 </html>

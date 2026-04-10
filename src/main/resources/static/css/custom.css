@@ -132,11 +132,8 @@
 } 
 
 #responsiveContainer {
-  padding-left: 70px;
-  padding-right: 180px;
-  margin-top: 80px;
-  margin-left: 170px;
-  max-width: 100%;
+    margin-left: 0 !important;
+    padding: 0 !important;
 }
 
 /* For tablets and below (adjust max-width as needed) */
@@ -160,12 +157,12 @@
 }
 
 #responsiveContainerAlert {
-  padding-left: 70px;
-  padding-right: 180px;
-  margin-top: 80px;
-  margin-left: 280px;
-  margin-right: 60px;
-  max-width: 100%;
+  /*padding-left: 70px;
+  padding-right: 180px;*/
+  margin-top: 20px;
+  /*margin-left: 280px;
+
+  max-width: 100%;*/
 }
 
 /* For tablets and below (adjust max-width as needed) */
