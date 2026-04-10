@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
 
-    <!-- Tailwind CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <!-- Flowbite CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css">
 
     <style>
@@ -25,10 +23,8 @@
             }
         }
         
-        /* Add this CSS to style the input field border in red when there's an error */
 .has-error input {
-    border-color: #ff0000; /* Red color */
-    /* You can also add additional styling such as border width or border style */
+    border-color: #ff0000; 
 }
 
         
@@ -43,7 +39,6 @@
         <div class="flex justify-center items-center h-screen">
             <div class="max-w-screen-md p-6">
 
-                <!-- Error Alert -->
                 <div id="errorAlert" class="hidden flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800" role="alert">
                     <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
@@ -51,7 +46,6 @@
                     <span>Invalid username or password. Please check!</span>
                 </div>
 
-                <!-- Logout Alert -->
                 <div id="logoutAlert" class="hidden flex items-center p-4 mb-4 text-sm text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800" role="alert">
                     <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
@@ -60,25 +54,20 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Email and Google Login Form -->
                     <form class="max-w-md mb-8" method="post" id="loginWithEmailAndGoogleAccount" th:action="@{/token}">
-                        <!-- Username Input -->
                         <div class="relative z-0 w-full mb-5 group">
                             <input type="text" name="username" id="floating_email" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="floating_email" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Email address</label>
                         </div>
-                        <!-- Password Input -->
                         <div class="relative z-0 w-full mb-5 group">
                             <input type="password" name="password" id="floating_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="floating_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Password</label>
                         </div>
-                        <!-- Submit and Reset Buttons -->
                         <div class="flex md:space-x-4 rtl:space-x-reverse mt-4 md:mt-0">
                             <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
                             <button type="reset" class="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 ml-3">Reset</button>
                         </div>
                         <hr style="margin-top: 10px; margin-bottom: 10px;">
-                        <!-- Social Login Buttons -->
                         <div class="flex justify-center">
                             <button type="button" class="text-white bg-[#24292F] hover:bg-[#24292F]/90 focus:ring-4 focus:outline-none focus:ring-[#24292F]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 dark:hover:bg-[#050708]/30 me-2 mb-2">
                                 <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -99,20 +88,12 @@
                         </div>
                     </form>
 
-                    <!-- Mobile Number and OTP Login Form -->
                     <form class="max-w-md mb-8 hidden" method="post" id="loginWithMobileAndOtp">
-                        <!-- Mobile Number Input -->
                         <div class="relative z-0 w-full mb-5 group">
                             <input type="text" name="mobileNumber" id="floating_mobile" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="floating_mobile" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Mobile Number</label>
                         </div>
-                        <!-- OTP Input -->
                         <div class="relative z-0 w-full mb-5 group hidden" id="otpfield">
-                           <!-- <input type="text" 
-                            	name="otp" 
-                            	id="floating_otp" 
-                            	class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" 
-                            	placeholder=" " />-->
                             	
                              <input type="text" 
                             	name="otp" 
@@ -126,7 +107,6 @@
                             	
                             <label for="floating_otp" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">OTP</label>
                         </div>
-                        <!-- Submit and Reset Buttons -->
                         <div class="flex ">
                             <button id="sendButtonId" onclick="sendButton()" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Send</button>
 
@@ -134,13 +114,11 @@
                         </div>
                     </form>
 
-                    <!-- Image -->
                     <div class="max-w-md flex justify-center items-center">
                         <img th:src="@{images/4.jpg}" alt="Home Image" class="grid rounded-lg" style="max-width: 100%; height: auto;">
                     </div>
                 </div>
 
-                <!-- Switch Login Method Links -->
                 <div class="flex justify-center mt-4 space-x-4">
                     <button id="switchToMobile" class="px-4 py-2 bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">Login with Mobile Number</button>
                     <button id="switchToEmail" class="hidden px-4 py-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">Login with Email</button>
@@ -173,7 +151,7 @@
         setTimeout(function() {
             $('#errorAlert').fadeOut();
             $('#logoutAlert').fadeOut();
-        }, 3000); // Fade out after 3 seconds
+        }, 3000); 
 
         function disableBack() { window.history.forward(); }
         window.onload = disableBack();
@@ -181,67 +159,23 @@
         
     });
     
-    
-/*function sendButton() {
-    var mobileNumber = $('#floating_mobile').val();
-
-    // Remove any existing error class
-    $('#floating_mobile').closest('.group').removeClass('has-error');
-
-    // Check if the mobile number field is empty
-    if (!mobileNumber.trim()) {
-        // Add error class to the parent element of the input field
-        $('#floating_mobile').closest('.group').addClass('has-error');
-        return false; // Prevent form submission
-    }
-
-    // If mobile number is not empty, continue with sending process
-    $('#sendButtonId').hide();
-    $('#verifyButtonId').show();
-    $('#otpfield').show();
-    $('#floating_mobile').prop('disabled', true); // Disable mobile input field
-    $('#floating_otp').show().prop('required', true);
-    
-    // Construct the URL with the mobile number as a path parameter
-    var url = '/auth/generate-otp/' + mobileNumber;
-
-    $.ajax({
-        type: 'POST',
-        url: url,
-        timeout: 60000,
-        success: function(data, textStatus, jqXHR) {
-            console.log('Success:', data);
-            // Handle success response here
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            console.log('Error:', textStatus);
-            // Handle error response here
-        }
-    });
-};*/ 
-
 
 function sendButton() {
     var mobileNumber = $('#floating_mobile').val();
 
-    // Remove any existing error class
     $('#floating_mobile').closest('.group').removeClass('has-error');
 
-    // Check if the mobile number field is empty
     if (!mobileNumber.trim()) {
-        // Add error class to the parent element of the input field
         $('#floating_mobile').closest('.group').addClass('has-error');
-        return false; // Prevent form submission
+        return false; 
     }
 
-    // If mobile number is not empty, continue with sending process
     $('#sendButtonId').hide();
     $('#verifyButtonId').show();
     $('#otpfield').show();
-    $('#floating_mobile').prop('disabled', true); // Disable mobile input field
+    $('#floating_mobile').prop('disabled', true); 
     $('#floating_otp').show().prop('required', true);
     
-    // Construct the URL with the mobile number as a path parameter
     var url = '/auth/generate-otp/' + mobileNumber;
 
     $.ajax({
@@ -251,25 +185,20 @@ function sendButton() {
         success: function(data, textStatus, jqXHR) {
             console.log('Success:', data);
             detectOTP(data);
-            // Handle success response here
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log('Error:', textStatus);
-            // Handle error response here
         }
     });
 };
 
 function detectOTP(otp) {
-    // Get the OTP input field
     const otpInput = document.getElementById('floating_otp');    
     if (!otpInput) {
         console.log('No OTP input field found.');
         return;
     }
-    // Extract only the digits from the OTP using regular expression
     const extractedOTP = otp.match(/\d{4}/)[0];
-    // Fill the OTP input field with the extracted OTP
     otpInput.value = extractedOTP;
     console.log('OTP filled:', extractedOTP);
 }
@@ -281,17 +210,13 @@ function verifyButton() {
     var mobileNumber = $('#floating_mobile').val();
     var otp = $('#floating_otp').val();
 
-    // Remove any existing error class
     $('#floating_otp').closest('.group').removeClass('has-error');
 
-    // Check if the OTP field is empty
     if (!otp.trim()) {
-        // Add error class to the parent element of the input field
         $('#floating_otp').closest('.group').addClass('has-error');
-        return false; // Prevent form submission
+        return false; 
     }
 
-    // Construct the URL with the mobile number and OTP as path parameters
     var url = '/auth/verify-otp/' + mobileNumber + '/' + otp;
 
     $.ajax({
@@ -300,15 +225,11 @@ function verifyButton() {
         timeout: 60000,
         success: function(data, textStatus, jqXHR) {
             console.log('Success:', data);
-            // Handle success response here
             
-           
-            // Redirect the user to the dashboard or another page
            window.location.href = '/my_app/access';
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log('Error:', textStatus);
-            // Handle error response here
             alert('Incorrect OTP. Please try again.');
         }
     });
