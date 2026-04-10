@@ -34,22 +34,40 @@
             .avatar-circle { width: 32px; height: 32px; background-color: #e0e7ff; color: #4f46e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
             
             /* Fix page content offset */
-            #content-wrapper { padding: 80px 20px 20px 20px; /* top right bottom left */ margin-left: 224px; width: calc(100% - 224px); box-sizing: border-box; }
-            .topbar.fixed-topbar { position: fixed; top: 0; left: 224px; right: 0; width: auto; z-index: 10000; max-width: none !important; }
-            @media (max-width: 768px) {
-    #content-wrapper {
-        margin-left: 0;
-        width: 100%;
-        padding: 70px 10px 10px 10px;
-    }
-
-    .topbar.fixed-topbar {
-        left: 0;
-    }
-}
-            #accordionSidebar { position: fixed; z-index: 10001; top: 0; bottom: 0; height: 100vh; overflow-y: auto; width: 224px !important; }
+            #content-wrapper { padding: 80px 20px 20px 20px; /* top right bottom left */ margin-left: 224px; width: calc(100% - 224px); box-sizing: border-box; transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out; }
+            .topbar.fixed-topbar { position: fixed; top: 0; left: 224px; right: 0; width: auto; z-index: 10000; max-width: none !important; transition: left 0.3s ease-in-out; }
+            
+            /* Desktop/Default behavior */
+            #accordionSidebar { position: fixed; z-index: 10001; top: 0; bottom: 0; height: 100vh; overflow-y: auto; width: 224px !important; transition: transform 0.3s ease-in-out; }
             #accordionSidebar::-webkit-scrollbar { display: none; }
             #accordionSidebar { -ms-overflow-style: none; scrollbar-width: none; }
+            .sidebar-backdrop { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 10000; opacity: 0; transition: opacity 0.3s ease-in-out; }
+
+            /* Mobile behavior overrides */
+            @media (max-width: 768px) {
+                #content-wrapper {
+                    margin-left: 0;
+                    width: 100%;
+                    padding: 70px 10px 10px 10px;
+                }
+
+                .topbar.fixed-topbar {
+                    left: 0;
+                }
+                
+                #accordionSidebar {
+                    transform: translateX(-100%);
+                }
+                
+                #accordionSidebar.show-sidebar {
+                    transform: translateX(0);
+                }
+                
+                .sidebar-backdrop.show-backdrop {
+                    display: block;
+                    opacity: 1;
+                }
+            }
             
             /* Modal overrides */
             .modal-content { border-radius: 0.75rem; border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
@@ -57,6 +75,7 @@
             .modal-footer { border-top: 1px solid #f1f5f9; background-color: #f8fafc; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
         </style>
 
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/user/dashboard">
                 <div class="sidebar-brand-icon">
@@ -68,7 +87,7 @@
             <hr class="sidebar-divider my-0">
 
             <li class="nav-item">
-                <a class="nav-link" th:href="@{'/user/dashboard'}">
+                <a class="nav-link mobile-link" th:href="@{'/user/dashboard'}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a> 
             </li>
@@ -88,8 +107,8 @@
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Business Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/business'}">Business</a>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/merchant_user'}">Merchant User</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/business'}">Business</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/merchant_user'}">Merchant User</a>
                     </div>
                 </div>
             </li>
@@ -103,7 +122,7 @@
                 <div id="merchantCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Merchant Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/merchant'}">Merchant</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/merchant'}">Merchant</a>
                     </div>
                 </div>
             </li>
@@ -117,8 +136,8 @@
                 <div id="location" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Location Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/country'}">Country</a>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/region'}">Region</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/country'}">Country</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/region'}">Region</a>
                     </div>
                 </div>
             </li>
@@ -132,7 +151,7 @@
                 <div id="customerCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Customer Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/customer'}">Customer</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/customer'}">Customer</a>
                     </div>
                 </div>
             </li>
@@ -146,7 +165,7 @@
                 <div id="leadsCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Leads Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/leads'}">Leads</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/leads'}">Leads</a>
                     </div>
                 </div>
             </li>
@@ -160,8 +179,8 @@
                 <div id="faqCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">FAQ Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/faqlist'}">FAQ List</a>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/faq'}">FAQ</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/faqlist'}">FAQ List</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/faq'}">FAQ</a>
                     </div>
                 </div>
             </li>
@@ -177,9 +196,9 @@
                 <div id="billCreate" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
 						<h6 class="collapse-header">Insight:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/bill/insight'}">Insight</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/bill/insight'}">Insight</a>
                         <h6 class="collapse-header">Activity:</h6>
-                        <a class="collapse-item" th:href="@{'/user/dashboard/billSummary'}">Bill</a>
+                        <a class="collapse-item mobile-link" th:href="@{'/user/dashboard/billSummary'}">Bill</a>
                     </div>
                 </div>
             </li>
@@ -295,6 +314,69 @@
                     if (href && currentUrl === href) {
                         var navItem = link.closest('.nav-item');
                         if (navItem) navItem.classList.add('active');
+                    }
+                });
+            }
+
+            // Mobile sidebar toggle logic
+            var sidebarToggleBtn = document.getElementById('sidebarToggleTop');
+            var sidebar = document.getElementById('accordionSidebar');
+            var backdrop = document.getElementById('sidebarBackdrop');
+
+            if (sidebarToggleBtn && sidebar && backdrop) {
+                // Ensure proper initial state for mobile
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('show-sidebar');
+                    backdrop.classList.remove('show-backdrop');
+                }
+
+                function toggleSidebar(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    
+                    // Check if it's currently shown
+                    var isShown = sidebar.classList.contains('show-sidebar');
+                    
+                    if (isShown) {
+                        // Hide it
+                        sidebar.classList.remove('show-sidebar');
+                        backdrop.classList.remove('show-backdrop');
+                    } else {
+                        // Show it
+                        sidebar.classList.add('show-sidebar');
+                        backdrop.classList.add('show-backdrop');
+                    }
+                }
+
+                // Remove existing listeners and add fresh ones
+                sidebarToggleBtn.onclick = null;
+                backdrop.onclick = null;
+                
+                sidebarToggleBtn.addEventListener('click', toggleSidebar, false);
+                backdrop.addEventListener('click', toggleSidebar, false);
+
+                // Auto-close on mobile when a link is clicked
+                var mobileLinks = document.querySelectorAll('.mobile-link');
+                mobileLinks.forEach(function(link) {
+                    link.addEventListener('click', function(e) {
+                        // We do NOT prevent default here so the navigation still happens
+                        if (window.innerWidth <= 768) {
+                            // Delay slightly to let the transition begin before navigating
+                            setTimeout(function() {
+                                sidebar.classList.remove('show-sidebar');
+                                backdrop.classList.remove('show-backdrop');
+                            }, 50);
+                        }
+                    });
+                });
+                
+                // Handle window resize to reset states if moving from mobile to desktop
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        sidebar.classList.remove('show-sidebar');
+                        backdrop.classList.remove('show-backdrop');
                     }
                 });
             }
