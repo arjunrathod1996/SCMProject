@@ -1,79 +1,95 @@
-#apiVersion: apps/v1
-#kind: Deployment
-#metadata:
-#  name: scm-app
-#spec:
-#  replicas: 1
-#  selector:
-#    matchLabels:
-#      app: scm-app
-#  template:
-#    metadata:
-#      labels:
-#        app: scm-app
-#    spec:
-#      containers:
-#        - name: scm-app
-#          image: arjunrathod1996/scmproject-githubactions:latest
-#          ports:
-#            - containerPort: 8081
-#          env:
-#            - name: SPRING_DATASOURCE_URL
-#              value: jdbc:mysql://mysql:3306/SCM
-#            - name: SPRING_DATASOURCE_USERNAME
-#              value: root
-#            - name: SPRING_DATASOURCE_PASSWORD
-#              value: root
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: scm-app
+  labels:
+    app: scm-app
 spec:
-  replicas: 1
+  # 1. HIGH AVAILABILITY: Run 3 instances of your app so if one crashes, the others take over.
+  replicas: 3
   selector:
     matchLabels:
       app: scm-app
+  
+  # 2. ZERO DOWNTIME DEPLOYMENTS: Ensures old pods aren't killed until new ones are ready
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
   template:
     metadata:
       labels:
         app: scm-app
     spec:
+      # Optional but recommended for enterprise: spread pods across different physical nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - scm-app
+              topologyKey: kubernetes.io/hostname
+
       containers:
         - name: scm-app
+          # NOTE: You should change 'latest' to a specific tag like 'v1.0.4' or a Git commit SHA in your CI/CD pipeline
           image: arjunrathod1996/scmproject-githubactions:latest
-
+          imagePullPolicy: Always
           ports:
             - containerPort: 8081
 
+          # 3. SECURED ENVIRONMENT VARIABLES
           env:
-            # ✅ MySQL Config
             - name: SPRING_DATASOURCE_URL
               value: jdbc:mysql://mysql:3306/SCM
-
             - name: SPRING_DATASOURCE_USERNAME
-              value: root
-
+              valueFrom:
+                secretKeyRef:
+                  name: scm-secrets
+                  key: db-username
             - name: SPRING_DATASOURCE_PASSWORD
-              value: root
-
-            # ✅ GROQ API KEY (from Kubernetes Secret)
+              valueFrom:
+                secretKeyRef:
+                  name: scm-secrets
+                  key: db-password
             - name: GROQ_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: groq-secret
-                  key: GROQ_API_KEY
+                  name: scm-secrets
+                  key: groq-api-key
 
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: scm-app-service
-spec:
-  selector:
-    app: scm-app
-  ports:
-    - protocol: TCP
-      port: 8081
-      targetPort: 8081
-  type: LoadBalancer
+          # 4. RESOURCE LIMITS: Protects the Kubernetes cluster from memory leaks
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+
+          # 5. HEALTH CHECKS: Tells Kubernetes if the app is frozen or ready for traffic
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness # Ensure Spring Boot Actuator is enabled! Or change to a valid endpoint like '/'
+              port: 8081
+            initialDelaySeconds: 60 # Give Spring Boot time to start up
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness # Ensure Actuator is enabled! Or change to '/'
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3

@@ -8,16 +8,31 @@ spec:
   ports:
     - protocol: TCP
       port: 3306
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce # This is suitable for a single MySQL pod
+  resources:
+    requests:
+      storage: 5Gi # Start with 5GB, adjust as needed
+
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mysql
 spec:
-  replicas: 1
+  replicas: 1 # For a database, a StatefulSet is often preferred over a Deployment for stable network identifiers and ordered updates. For simplicity, we'll stick with Deployment but note this for a true enterprise setup.
   selector:
     matchLabels:
       app: mysql
+  strategy:
+    type: Recreate # Ensures the old pod is terminated before the new one is created, preventing two pods from trying to claim the same PVC.
   template:
     metadata:
       labels:
@@ -25,11 +40,38 @@ spec:
     spec:
       containers:
         - name: mysql
-          image: mysql:8
+          image: mysql:8.0 # Use a specific version tag instead of 'latest'
           ports:
             - containerPort: 3306
           env:
-            - name: MYSQL_ROOT_PASSWORD
-              value: root
             - name: MYSQL_DATABASE
-              value: SCM
+              value: "SCM"
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: scm-secrets
+                  key: db-username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: scm-secrets
+                  key: db-password
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: scm-secrets
+                  key: db-password
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
