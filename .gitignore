@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Kubernetes Secrets ###
+k8s/secrets.yaml
+k8s/secret*.yaml
