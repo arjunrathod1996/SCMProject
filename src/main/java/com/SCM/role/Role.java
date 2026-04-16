@@ -27,7 +27,7 @@ public class Role extends BigBaseEntity {
   
   public static enum RoleType {
       ROLE_ADMIN("Admin"),
-      ROLE_CUSTOMER("Customer"),
+      ROLE_CUSOMER("Customer"),
       ROLE_MERCHANT("Merchant"),
       ROLE_MERCHANT_STAFF("Merchant Staff"),
       ROLE_MERCHANT_ADMIN("Merchant Admin"),

@@ -324,10 +324,10 @@ public class OAuthenticationSuccessHandler implements AuthenticationSuccessHandl
         newUser.setProviderUserId(oauthUser.getName());
 
         try {
-            Role userRole = roleRepository.findByName(Role.RoleType.ROLE_CUSTOMER);
+            Role userRole = roleRepository.findByName(Role.RoleType.ROLE_CUSOMER);
             if (userRole == null) {
                 userRole = new Role();
-                userRole.setName(Role.RoleType.ROLE_CUSTOMER);
+                userRole.setName(Role.RoleType.ROLE_CUSOMER);
                 userRole = roleRepository.save(userRole);
             }
             newUser.setRole(userRole);

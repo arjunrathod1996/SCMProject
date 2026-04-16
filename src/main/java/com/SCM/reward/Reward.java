@@ -191,13 +191,13 @@ public class Reward extends BigBaseEntity{
 		this.note = note;
 	}
 	
-	boolean deleted = false;
+	Boolean deleted = false;
 
-	public boolean isDeleted() {
+	public Boolean getDeleted() {
 		return deleted;
 	}
 
-	public void setDeleted(boolean deleted) {
+	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
 	}
 	

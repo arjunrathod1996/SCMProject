@@ -142,7 +142,7 @@ public class PhotoMerchant extends BigBaseEntity{
 	@Column(name = "sequence")
 	Long sequence;
 	
-	boolean deleted;
+	Boolean deleted = false;
 	
 	//@Transient
 	
@@ -234,11 +234,11 @@ public class PhotoMerchant extends BigBaseEntity{
 		this.sequence = sequence;
 	}
 
-	public boolean isDeleted() {
+	public Boolean getDeleted() {
 		return deleted;
 	}
 
-	public void setDeleted(boolean deleted) {
+	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
 	}
 
@@ -314,4 +314,3 @@ public class PhotoMerchant extends BigBaseEntity{
 		this.description = description;
 	}
 }
-

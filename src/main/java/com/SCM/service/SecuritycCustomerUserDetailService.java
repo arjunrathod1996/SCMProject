@@ -61,11 +61,45 @@ public class SecuritycCustomerUserDetailService implements UserDetailsService {
 //    }    
     
     
+//    @Override
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//        Optional<User> userOptional = userRepository.findByEmail(username);
+//
+//        User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
+//
+//        return buildUserDetails(user);
+//    }
+//
+//    public UserDetails loadUserByMobileAndOtp(String mobileNumber) {
+//        User user = userRepository.findByPhoneNumber(mobileNumber);
+//
+//        if (user == null) {
+//            throw new UsernameNotFoundException("User not found with mobile number: " + mobileNumber);
+//        }
+//
+//        return buildUserDetails(user);
+//    }
+//
+//    private UserDetails buildUserDetails(User user) {
+//        Role role = user.getRole();
+//        GrantedAuthority authority = new SimpleGrantedAuthority(role.getName().name());
+//
+//        // Use the email if it exists, otherwise use the phone number
+//        String username = (user.getEmail() != null && !user.getEmail().isEmpty()) ? user.getEmail() : user.getPhoneNumber();
+//
+//        return org.springframework.security.core.userdetails.User.builder()
+//                .username(username)
+//                .password(user.getPassword() != null ? user.getPassword() : "") // Password can be empty for OTP auth
+//                .authorities(Collections.singletonList(authority))
+//                .build();
+//    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> userOptional = userRepository.findByEmail(username);
 
-        User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
+        User user = userOptional.orElseThrow(() ->
+                new UsernameNotFoundException("User not found with email: " + username));
 
         return buildUserDetails(user);
     }
@@ -81,16 +115,37 @@ public class SecuritycCustomerUserDetailService implements UserDetailsService {
     }
 
     private UserDetails buildUserDetails(User user) {
-        Role role = user.getRole();
-        GrantedAuthority authority = new SimpleGrantedAuthority(role.getName().name());
 
-        // Use the email if it exists, otherwise use the phone number
-        String username = (user.getEmail() != null && !user.getEmail().isEmpty()) ? user.getEmail() : user.getPhoneNumber();
+        if (user == null) {
+            throw new UsernameNotFoundException("User is null");
+        }
+
+        Role role = user.getRole();
+
+        // ✅ FIX: handle null role properly
+        if (role == null || role.getName() == null) {
+            throw new UsernameNotFoundException(
+                    "User has no role assigned. User ID: " + user.getId()
+            );
+        }
+
+        // ✅ Authority
+        String roleName = role.getName().name();
+        GrantedAuthority authority = new SimpleGrantedAuthority(roleName);
+
+        // ✅ Username fallback (email → phone)
+        String username = (user.getEmail() != null && !user.getEmail().isEmpty())
+                ? user.getEmail()
+                : user.getPhoneNumber();
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(username)
-                .password(user.getPassword() != null ? user.getPassword() : "") // Password can be empty for OTP auth
+                .password(user.getPassword() != null ? user.getPassword() : "")
                 .authorities(Collections.singletonList(authority))
+                .accountExpired(false)
+                .accountLocked(false)
+                .credentialsExpired(false)
+                .disabled(false)
                 .build();
     }
 }

@@ -23,13 +23,13 @@ public Photo findByFileNameAndDeleted(String fileName, boolean deleted);
 	public Photo findByMerchantAndTypeAndSequenceAndDeleted(Merchant merchant, PhotoType type, Long sequence, boolean deleted);
 	
 	@Query(value = "SELECT COALESCE(COUNT(p.id),0) FROM Photo p "
-			+ "WHERE p.deleted = false "
+			+ "WHERE (p.deleted = false OR p.deleted IS NULL) "
 			+ "AND p.type = :photoType "
 			+ "AND p.merchant.id = :merchantID ")
 	public Integer countByMerchant(@Param("merchantID") Long merchantID,@Param("photoType") PhotoType pwaLogoS);
 	
 	@Query("SELECT p FROM Photo p "
-	           + "WHERE p.deleted = false "
+	           + "WHERE (p.deleted = false OR p.deleted IS NULL) "
 	           + "AND p.type = :type "
 	           + "AND p.id = :photoId "
 	           + "AND p.merchant IS NULL "

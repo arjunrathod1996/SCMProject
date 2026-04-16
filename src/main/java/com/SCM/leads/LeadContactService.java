@@ -62,7 +62,7 @@ public class LeadContactService {
 		original.setPhoneNumber2(leadContact.getPhoneNumber2());
 		original.setEmail(leadContact.getEmail());
 		original.setDesignation(leadContact.getDesignation());
-		original.setImportant(leadContact.isImportant());
+		original.setImportant(leadContact.getImportant());
 		original.setLocation(leadContact.getLocation());
 		original.setNote(leadContact.getNote());
 		original.setUpdatedBy(leadContact.getUpdatedBy());

@@ -55,7 +55,7 @@ public class LeadContact extends BigBaseEntity{
 	String note;
 	
 	@Column(name = "important")
-	boolean important;
+	Boolean important = false;
 	
 	@ManyToOne
 	@JoinColumn(name = "created_by")
@@ -66,7 +66,7 @@ public class LeadContact extends BigBaseEntity{
 	User updatedBy;
 	
 	@Column(name = "deleted")
-	boolean deleted;
+	Boolean deleted = false;
 	
 	@Column(name = "extras")
 	String extras;
@@ -172,11 +172,11 @@ public class LeadContact extends BigBaseEntity{
 		this.note = note;
 	}
 
-	public boolean isImportant() {
+	public Boolean getImportant() {
 		return important;
 	}
 
-	public void setImportant(boolean important) {
+	public void setImportant(Boolean important) {
 		this.important = important;
 	}
 
@@ -196,11 +196,11 @@ public class LeadContact extends BigBaseEntity{
 		this.updatedBy = updatedBy;
 	}
 
-	public boolean isDeleted() {
+	public Boolean getDeleted() {
 		return deleted;
 	}
 
-	public void setDeleted(boolean deleted) {
+	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
 	}
 
