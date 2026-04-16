@@ -20,13 +20,13 @@ public interface LeadActivityRepository extends CrudRepository<LeadActivity, Lon
 	public Integer countByLeadMainAndDeleted(LeadMain lead,boolean deleted);
 	
 	@Query(value = "SELECT * FROM LEAD_ACTIVITY "
-			+ "WHERE DELETED = FALSE "
+			+ "WHERE (DELETED = FALSE OR DELETED IS NULL) "
 			+ "AND LEAD_ID IN :leadIDs "
 			+ "ORDER BY CREATION_TIME DESC ",nativeQuery = true)
 	public List<LeadActivity> findAllByLeads(@Param("leadIDs") Long leadIDs);
 	
 	@Query(value = "SELECT l FROM LeadActivity l "
-			+ "WHERE l.deleted = false "
+			+ "WHERE (l.deleted = false OR l.deleted IS NULL) "
 			+ "AND l.leadMain.business.id = :businessID "
 			+ "AND l.id = :activityID "
 			+ "AND (:assigneeID IS NULL OR (:assigneeID IS NOT NULL AND l.leadMain.assignedTo.id = :assigneeID )) "
@@ -37,13 +37,13 @@ public interface LeadActivityRepository extends CrudRepository<LeadActivity, Lon
 			@Param("activityTypes") List<ActivityType> activityTypes);
 	
 	@Query(value = "SELECT LEAD_ID , COUNT(ID), MAX(CREATION_TIME) FROM LEAD_ACTIVITY "
-			+ "WHERE DELETED = FALSE "
+			+ "WHERE (DELETED = FALSE OR DELETED IS NULL) "
 			+ "AND LEAD_ID IN :leadIDs "
 			+ "ORDER BY LEAD_ID ",nativeQuery = true)
 	public List<Object[]> findCountAndLastActivityByLead(@Param("leadIDs") Long leadIDs);
 	
 	@Query(value = "SELECT l FROM LeadActivity l "
-			+ "WHERE l.deleted = false "
+			+ "WHERE (l.deleted = false OR l.deleted IS NULL) "
 			+ "AND l.leadMain.business.id = :businessID "
 			+ "AND (:assigneeID IS NULL OR (:assigneeID IS NOT NULL AND l.leadMain.assignedTo.id = :assigneeID)) "
 			+ "AND (:activityType IS NULL OR l.activityType = :activityType) "
@@ -67,10 +67,9 @@ public interface LeadActivityRepository extends CrudRepository<LeadActivity, Lon
 			@Param("endDate") String endDate);
 	
 	@Query(value = "SELECT LEAD_ID, COUNT(ID), MAX(CREATION_TIME) FROM LEAD_ACTIVITY "
-			+ "WHERE DELETED = 0 "
+			+ "WHERE (DELETED = 0 OR DELETED IS NULL) "
 			+ "AND LEAD_ID IN :leadIDs "
 			+ "GROUP BY LEAD_ID ", nativeQuery = true)
 	public List<Object[]> findCuntAndLastActivityByLead(@Param("leadIDs") List<Long> leadIDs);
 
 }
-

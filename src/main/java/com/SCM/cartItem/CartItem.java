@@ -71,7 +71,7 @@ public class CartItem extends BigBaseEntity {
     private String reviewText;
 
     @Column(name = "deleted")
-    private boolean deleted = false;
+    private Boolean deleted = false;
     
     // Calculate the amount based on the quantity and price
     private double calculateAmount() {
@@ -164,11 +164,11 @@ public class CartItem extends BigBaseEntity {
 		this.reviewText = reviewText;
 	}
 
-	public boolean isDeleted() {
+	public Boolean getDeleted() {
 		return deleted;
 	}
 
-	public void setDeleted(boolean deleted) {
+	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
 	}
 

@@ -39,33 +39,33 @@ public interface LeadMainRepository extends CrudRepository<LeadMain, Long>{
 	public List<LeadMain> findByBusinessAndDeletedAndAssignedToAndNameContaining(Business business,boolean deleted,User assignedTo,String name);
 	
 	@Query(value = "SELECT STATUS , COALESCE(COUNT(ID),0) FROM LEAD_MAIN "
-			+ "WHERE DELETED = FALSE "
+			+ "WHERE (DELETED = FALSE OR DELETED IS NULL) "
 			+ "AND BUSINESS_ID = ?1 "
 			+ "GROUP BY STATUS ",nativeQuery = true)
 	public List<Object[]> countByBusinessAndStatus(Long businessID);
 
 	@Query(value = "SELECT STATUS,COALESCE(COUNT(ID),0) FROM LEAD_MAIN "
-			+ "WHERE DELETED = FALSE "
+			+ "WHERE (DELETED = FALSE OR DELETED IS NULL) "
 			+ "AND ASSIGNED_TO IS NOT NULL "
 			+ "AND ASSIGNED_TO = ?1 "
 			+ "GROUP BY STATUS ",nativeQuery = true)
 	public List<Object[]> countByAssignedToAndStatus(Long assigneeID);
 	
 	@Query(value = "SELECT COALESCE(COUNT(ID),0) FROM LEAD_MAIN "
-			+ "WHERE DELETED = FALSE "
+			+ "WHERE (DELETED = FALSE OR DELETED IS NULL) "
 			+ "AND ASSIGNED_TO IS NOT NULL "
 			+ "AND ASSIGNED_TO = ?1 ",nativeQuery = true)
 	public Integer countByAssignedTo(Long assigneeID);
 	
 	@Query(value = "SELECT ASSIGNED_TO , STATUS, COUNT(STATUS) FROM LEAD_MAIN "
-			+ "WHERE DELETED = FALSE "
+			+ "WHERE (DELETED = FALSE OR DELETED IS NULL) "
 			+ "AND ASSIGNED_TO IS NOT NULL "
 			+ "AND ASSIGNED_TO IN ?1 "
 			+ "GROUP BY STATUS,ASSIGNED_TO ",nativeQuery = true)
 	public List<Object[]> findByAssignee(List<Long> assigneeIDs);
 	
 	@Query(value = "SELECT ASSIGNED_TO , COALESCE(COUNT(ID),0) assignmentCount FROM LEAD_MAIN "
-			+ "WHERE DELETED = FALSE "
+			+ "WHERE (DELETED = FALSE OR DELETED IS NULL) "
 			+ "AND ASSIGNED_TO IS NOT NULL "
 			+ "AND ASSIGNED_TO IN :assignedTo "
 			+ "GROUP BY ASSIGNED_TO "
@@ -93,7 +93,7 @@ public interface LeadMainRepository extends CrudRepository<LeadMain, Long>{
 			@Param("istOffSet") String istOffSet);
 	
 	@Query(value = "SELECT * FROM LEAD_MAIN "
-			+ "WHERE DELETED = FALSE "
+			+ "WHERE (DELETED = FALSE OR DELETED IS NULL) "
 			+ "AND CREATED_BY = :createdBy "
 			+ "AND STATUS IN :status "
 			+ "AND ASSIGNED_TO IS NOT NULL "
@@ -104,7 +104,7 @@ public interface LeadMainRepository extends CrudRepository<LeadMain, Long>{
 			@Param("assignedTo") Long assignedTo);
 	
 	@Query(value = "SELECT * FROM LEAD_MAIN "
-			+ "WHERE DELETED = FALSE "
+			+ "WHERE (DELETED = FALSE OR DELETED IS NULL) "
 			+ "AND CREATED_BY = :createdBy "
 			+ "AND STATUS IN :status "
 			+ "ORDER BY CREATION_TIME DESC",nativeQuery = true)
@@ -112,7 +112,7 @@ public interface LeadMainRepository extends CrudRepository<LeadMain, Long>{
 			@Param("status") List<Integer> status);
 	
 	@Query(value = "SELECT * FROM LEAD_MAIN "
-			+ "WHERE DELETED = FALSE "
+			+ "WHERE (DELETED = FALSE OR DELETED IS NULL) "
 			+ "AND CREATED_BY = :createdBy "
 			+ "AND STATUS IN :status "
 			+ "AND ASSIGNED_TO IS NOT NULL "
@@ -144,7 +144,7 @@ public interface LeadMainRepository extends CrudRepository<LeadMain, Long>{
 	
 	
 	@Query(value = "SELECT DISTINCT SOURCE,COUNT(ID) AS COUNT  FROM LEAD_MAIN "
-            + "WHERE DELETED = FALSE "
+            + "WHERE (DELETED = FALSE OR DELETED IS NULL) "
             + "AND SOURCE IS NOT NULL "
             + "AND SOURCE != '' "
             + "AND BUSINESS_ID = ?1 "
@@ -182,7 +182,7 @@ public interface LeadMainRepository extends CrudRepository<LeadMain, Long>{
 	
 	
 	@Query(value = "SELECT l FROM LeadMain l " +
-		    "WHERE l.deleted = false " +
+		    "WHERE (l.deleted = false OR l.deleted IS NULL) " +
 		    "AND l.business.id = :businessID " +
 		    "AND (:creatorId IS NULL OR l.createdBy.id = :creatorId) " +
 		    "AND (:assigneeID IS NULL OR l.assignedTo.id = :assigneeID) " +

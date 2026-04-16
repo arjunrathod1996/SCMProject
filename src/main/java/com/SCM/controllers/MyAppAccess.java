@@ -277,7 +277,7 @@ public class MyAppAccess {
 	        
 	        Map<Long, Integer> photoIdToQuantityMap = new HashMap<>();
 	        for (CartItem cartItem : cartItems) {
-	            if (!cartItem.isDeleted()) {
+	            if (!cartItem.getDeleted()) {
 	                photoIdToQuantityMap.put(cartItem.getPhotoMerchant().getId(), cartItem.getQuantity());
 	            }
 	        }

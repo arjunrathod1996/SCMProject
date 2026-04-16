@@ -21,13 +21,13 @@ public List<LeadContact> findByLeadMainAndFirstNameContaining(LeadMain leadMain 
 	@Query(value = "SELECT l.LEAD_ID , COALESCE(COUNT(l.ID), 0) "
 			+ "FROM LEAD_CONTACT l "
 			+ "WHERE l.BUSINESS_ID =:businessID "
-			+ "AND DELETED = false "
+			+ "AND (DELETED = false OR DELETED IS NULL) "
 			+ "AND l.LEAD_ID IN :leadIDs "
 			+ "GROUP BY l.LEAD_ID ",nativeQuery = true)
 	public List<Object[]> countByLeadMain(@Param("businessID") Long businessID,@Param("leadIDs") List<Long> leadIDs);
 	
 	@Query(value = "SELECT l FROM LeadContact l "
-			+ "WHERE l.deleted = false "
+			+ "WHERE (l.deleted = false OR l.deleted IS NULL) "
 			+ "AND l.business.id = :businessID "
 			+ "AND l.id = :contactID "
 			+ "AND(:assigneeID IS NULL OR (:assigneeID IS NOT NULL AND l.leadMain.assignedTo.id = :assigneeID))")
@@ -36,7 +36,7 @@ public List<LeadContact> findByLeadMainAndFirstNameContaining(LeadMain leadMain 
 			@Param("assigneeID") Long assigneeID);
 	
 	@Query(value = "SELECT l FROM LeadContact l "
-			+ "WHERE l.deleted = false "
+			+ "WHERE (l.deleted = false OR l.deleted IS NULL) "
 			+ "AND l.business.id = :businessID "
 			+ "AND (:assigneeID IS NULL OR (:assigneeID IS NOT NULL AND l.leadMain.assignedTo.id = :assigneeID)) "
 			+ "AND (:name IS NULL OR LOWER(l.firstName) LIKE CONCAT('%',LOWER(:name),'%') OR LOWER(l.lastName) LIKE CONCAT('%',LOWER(:name),'%')) "
@@ -70,9 +70,8 @@ public List<LeadContact> findByLeadMainAndFirstNameContaining(LeadMain leadMain 
 	public List<Object[]> findContactCount(@Param("leadIDs") List<Long> leadIDs);
 	
 	@Query(value = "SELECT LEAD_ID, COUNT(ID), MAX(CREATION_TIME) FROM LEAD_ACTIVITY "
-			+ "WHERE DELETED = 0 "
+			+ "WHERE (DELETED = 0 OR DELETED IS NULL) "
 			+ "AND LEAD_ID IN :leadIDs "
 			+ "GROUP BY LEAD_ID ", nativeQuery = true)
 	public List<Object[]> findCuntAndLastActivityByLead(@Param("leadIDs") List<Long> leadIDs);
 } 
-

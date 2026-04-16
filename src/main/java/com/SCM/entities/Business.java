@@ -36,7 +36,7 @@ public class Business extends BigBaseEntity{
 	private String name;
 	
 	 @Column(name = "deleted", columnDefinition = "INT(11)")
-	private boolean deleted= false;
+	private Boolean deleted = false;
 	
 	String description;
 	
@@ -113,11 +113,11 @@ public class Business extends BigBaseEntity{
         this.description = description;
     }
 
-	public boolean isDeleted() {
+	public Boolean getDeleted() {
 		return deleted;
 	}
 
-	public void setDeleted(boolean deleted) {
+	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
 	}
 

@@ -15,10 +15,9 @@ import com.SCM.entities.Business;
 public interface BusinessRepository extends CrudRepository<Business,Long>{
 
      @Query(value = "SELECT b FROM Business b "
-     		+ "Where b.deleted = false ")
+     		+ "Where (b.deleted = false OR b.deleted IS NULL)")
 	public Page<Business> findBusinessPageWisee(Pageable pageable);
 
 	public List<Business> findByName(String name);  
 
 }
- 

@@ -80,10 +80,10 @@ public class PageController {
 	        user.setPassword(userForm.getPassword());
 	        user.setPhoneNumber(userForm.getPhoneNumber()); 
 	        
-	        Role userRole = roleRepository.findByName(Role.RoleType.ROLE_CUSTOMER);
+	        Role userRole = roleRepository.findByName(Role.RoleType.ROLE_CUSOMER);
 	        if (userRole == null) {
 	            userRole = new Role();
-	            userRole.setName(Role.RoleType.ROLE_CUSTOMER);
+	            userRole.setName(Role.RoleType.ROLE_CUSOMER);
 	            userRole = roleRepository.save(userRole);
 	        }
 	        user.setRole(userRole);

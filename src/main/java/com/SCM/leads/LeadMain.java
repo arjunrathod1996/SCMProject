@@ -121,13 +121,13 @@ public class LeadMain extends BigBaseEntity{
 	String comment;
 	
 	@Column(name = "important")
-	boolean important;
+	Boolean important = false;
 	
 	@Column(name = "extras")
 	String extras;
 	
 	@Column(name = "deleted")
-	boolean deleted;
+	Boolean deleted = false;
 	
 	@Transient
 	LeadMainExtras leadMainExtas;
@@ -283,11 +283,11 @@ public class LeadMain extends BigBaseEntity{
 		Category = category;
 	}
 
-	public boolean isImportant() {
+	public Boolean isImportant() {
 		return important;
 	}
 
-	public void setImportant(boolean important) {
+	public void setImportant(Boolean important) {
 		this.important = important;
 	}
 
@@ -300,11 +300,11 @@ public class LeadMain extends BigBaseEntity{
 		this.leadMainExtas = LeadMainExtras.fromJSON(extras);
 	}
 
-	public boolean isDeleted() {
+	public Boolean isDeleted() {
 		return deleted;
 	}
 
-	public void setDeleted(boolean deleted) {
+	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
 	}
 
@@ -457,4 +457,3 @@ public class LeadMain extends BigBaseEntity{
 	}
 		
 }
-

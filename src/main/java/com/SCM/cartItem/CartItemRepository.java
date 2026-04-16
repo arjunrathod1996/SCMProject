@@ -30,7 +30,7 @@ public interface CartItemRepository extends CrudRepository<CartItem, Long>{
 	 @Query("SELECT SUM(c.quantity) AS totalQuantity FROM CartItem c JOIN c.photoMerchant p " +
 	           "WHERE c.status = :status AND p.user.id = :userId AND p.merchant.id = :merchantId " +
 	           "AND c.customer.id = :customerId "
-	           + "AND c.deleted = false ")
+	           + "AND (c.deleted = false OR c.deleted IS NULL) ")
 	    Integer getTotalQuantityByUserIdAndMerchantIdAndCustomerId(
 	        @Param("status") CartItem.CartItemStatus status,
 	        @Param("userId") Long userId,
@@ -41,7 +41,7 @@ public interface CartItemRepository extends CrudRepository<CartItem, Long>{
 	 @Query("SELECT SUM(c.amount) AS totalAmount FROM CartItem c JOIN c.photoMerchant p " +
 	           "WHERE c.status = :status AND p.user.id = :userId AND p.merchant.id = :merchantId " +
 	           "AND c.customer.id = :customerId "
-	           + "AND c.deleted = false ")
+	           + "AND (c.deleted = false OR c.deleted IS NULL) ")
 	    Integer getTotalAmountByUserIdAndMerchantIdAndCustomerId(
 	        @Param("status") CartItem.CartItemStatus status,
 	        @Param("userId") Long userId,
@@ -52,7 +52,7 @@ public interface CartItemRepository extends CrudRepository<CartItem, Long>{
 	 @Query("SELECT c FROM CartItem c JOIN c.photoMerchant p " +
 		       "WHERE c.status = :status AND p.user.id = :userId AND p.merchant.id = :merchantId " +
 		       "AND c.customer.id = :customerId "
-		       + "AND c.deleted = false ")
+		       + "AND (c.deleted = false OR c.deleted IS NULL) ")
 		List<CartItem> getCartItemByUserIdAndMerchantIdAndCustomerId(@Param("status") CartItemStatus status, 
 		                                                             @Param("userId") Long userId, 
 		                                                             @Param("merchantId") Long merchantId, 
@@ -62,7 +62,7 @@ public interface CartItemRepository extends CrudRepository<CartItem, Long>{
 		       "WHERE c.status = :status AND p.user.id = :userId AND p.merchant.id = :merchantId " +
 		       "AND c.customer.id = :customerId "
 		       + "AND p.id = :photoId "
-		       + "AND p.deleted = false ")
+		       + "AND (p.deleted = false OR p.deleted IS NULL) ")
 		List<CartItem> getCartItemByUserIdAndMerchantIdAndCustomerIdAndPhotoMerchantId(@Param("status") CartItemStatus status, 
 		                                                             @Param("userId") Long userId, 
 		                                                             @Param("merchantId") Long merchantId, 
@@ -100,7 +100,7 @@ public interface CartItemRepository extends CrudRepository<CartItem, Long>{
 //	List<CartItem> findByCustomerAndPhotoMerchantAndStatus(Customer customer, PhotoMerchant photoMerchant,
 //			CartItemStatus pending);
 	
-	 @Query("SELECT ci FROM CartItem ci WHERE ci.customer = :customer AND ci.photoMerchant = :photoMerchant AND ci.status = :status AND ci.deleted = false")
+	 @Query("SELECT ci FROM CartItem ci WHERE ci.customer = :customer AND ci.photoMerchant = :photoMerchant AND ci.status = :status AND (ci.deleted = false OR ci.deleted IS NULL)")
 	    List<CartItem> findByCustomerAndPhotoMerchantAndStatus(@Param("customer") Customer customer,
 	                                                           @Param("photoMerchant") PhotoMerchant photoMerchant,
 	                                                           @Param("status") CartItem.CartItemStatus status);
@@ -112,7 +112,7 @@ public interface CartItemRepository extends CrudRepository<CartItem, Long>{
             + "AND p.merchant_id = :merchantId "
             + "AND p.user_id = :userId "
             + "AND c.status = :status "
-            + "AND c.deleted = false ", nativeQuery = true)
+            + "AND (c.deleted = false OR c.deleted IS NULL) ", nativeQuery = true)
 Double findAverageRatingByMerchantIdAndUserId(@Param("status") CartItem.CartItemStatus status,
                                              @Param("merchantId") Long merchantId,
                                              @Param("userId") Long userId);
@@ -120,7 +120,7 @@ Double findAverageRatingByMerchantIdAndUserId(@Param("status") CartItem.CartItem
 	
 	 @Query("SELECT c FROM CartItem c JOIN c.photoMerchant p " +
 	           "WHERE p.merchant.id = :merchantId AND p.user.id = :userId "
-	           + "AND c.deleted = false ")
+	           + "AND (c.deleted = false OR c.deleted IS NULL) ")
 	    List<CartItem> findAllByMerchantIdAndUserId(@Param("merchantId") Long merchantId, @Param("userId") Long userId);
 	 
 	 @Query("SELECT c FROM CartItem c JOIN c.photoMerchant p " +
@@ -129,7 +129,7 @@ Double findAverageRatingByMerchantIdAndUserId(@Param("status") CartItem.CartItem
 	           "AND p.merchant.id = :merchantId " +
 	           "AND c.customer.id = :customerId " +
 	           "AND p.id = :photoId "
-	           + "AND c.deleted = false ")
+	           + "AND (c.deleted = false OR c.deleted IS NULL) ")
 	    List<CartItem> findByStatusesAndUserIdAndMerchantIdAndCustomerIdAndPhotoMerchantId(
 	            @Param("statuses") List<CartItemStatus> statuses,
 	            @Param("userId") Long userId,
@@ -145,7 +145,7 @@ Double findAverageRatingByMerchantIdAndUserId(@Param("status") CartItem.CartItem
 		       "AND p.user.id = :userId " +
 		       "AND c.status = :status " +
 		       "AND p.id = :photoId "
-		       + "AND c.deleted = false ")
+		       + "AND (c.deleted = false OR c.deleted IS NULL) ")
 		Double findAverageRatingByMerchantIdAndUserIdAndPhotoId(@Param("status") CartItemStatus status,
 		                                                       @Param("merchantId") Long merchantId,
 		                                                       @Param("userId") Long userId,
@@ -153,7 +153,7 @@ Double findAverageRatingByMerchantIdAndUserId(@Param("status") CartItem.CartItem
 
 	 @Query(value = "SELECT c.photoMerchant.id, AVG(c.rating) FROM CartItem c " +
              "WHERE c.rating IS NOT NULL "
-             + "and c.deleted = false " +
+             + "and (c.deleted = false OR c.deleted IS NULL) " +
              "GROUP BY c.photoMerchant.id ")
 List<Object[]> findAverageRatingByPhotoMerchantId();
 
@@ -217,7 +217,7 @@ Optional<CartItem> findByMerchantAndUserAndCustomer(
 //         "WHERE c.STATUS = 1 " +
 //         "AND p.MERCHANT_ID IN :merchantIds " +
 //         "AND c.CUSTOMER_ID IS NOT NULL " +
-//         "AND c.DELETED = false " +
+//         "AND (c.DELETED = false OR c.DELETED IS NULL) " +
 //         "AND (DATE(c.creationTime) BETWEEN DATE(STR_TO_DATE(:startDate, '%Y-%m-%d')) " +
 //         "AND DATE(STR_TO_DATE(:endDate, '%Y-%m-%d'))) " +
 //         "GROUP BY c.CUSTOMER_ID " +
@@ -232,7 +232,7 @@ Optional<CartItem> findByMerchantAndUserAndCustomer(
 //         "WHERE c.status = 1 " +
 //         "AND p.merchant.id IN :merchantIds " +
 //         "AND c.customer.id IS NOT NULL " +
-//         "AND c.deleted = false " +
+//         "AND (c.deleted = false OR c.deleted IS NULL) " +
 //         "AND (DATE(c.creationTime) BETWEEN DATE(STR_TO_DATE(:startDate,'%Y-%m-%d') ) " +
 //		 "AND DATE(STR_TO_DATE(:endDate,'%Y-%m-%d'))) " +
 //         "GROUP BY c.customer.id " +
@@ -247,7 +247,7 @@ Optional<CartItem> findByMerchantAndUserAndCustomer(
          "WHERE c.status = 1 " +
          "AND p.merchant.id IN :merchantIds " +
          "AND c.customer.id IS NOT NULL " +
-         "AND c.deleted = false " +
+         "AND (c.deleted = false OR c.deleted IS NULL) " +
          "AND (DATE(c.creationTime) BETWEEN DATE(STR_TO_DATE(:startDate,'%Y-%m-%d')) " +
          "AND DATE(STR_TO_DATE(:endDate,'%Y-%m-%d'))) " +
          "GROUP BY c.customer.id " +
@@ -342,5 +342,3 @@ Optional<CartItem> findByMerchantAndUserAndCustomer(
                                                 Sort sort); 
 
 }
-
-

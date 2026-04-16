@@ -155,6 +155,6 @@ public class BusinessServiceTest {
 
         businessService.deleteBusiness(1L);
 
-        assertTrue(existingBusiness.isDeleted(), "The business should be marked as deleted.");
+        assertTrue(existingBusiness.getDeleted(), "The business should be marked as deleted.");
     }
 }

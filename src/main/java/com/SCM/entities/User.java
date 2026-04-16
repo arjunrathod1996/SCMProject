@@ -71,9 +71,9 @@ public class User extends BigBaseEntity { // implements UserDetails
     @Column(length = 1000)
     private String profilePic;
     @Getter(AccessLevel.NONE) 
-    private boolean enabled = true;
-    private boolean emailVerified = false;
-    private boolean phoneVerfied = false;
+    private Boolean enabled = true;
+    private Boolean emailVerified = false;
+    private Boolean phoneVerfied = false;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "provider")
@@ -224,19 +224,19 @@ public class User extends BigBaseEntity { // implements UserDetails
 			this.profilePic = profilePic;
 		}
 
-		public boolean isEmailVerified() {
+		public Boolean isEmailVerified() {
 			return emailVerified;
 		}
 
-		public void setEmailVerified(boolean emailVerified) {
+		public void setEmailVerified(Boolean emailVerified) {
 			this.emailVerified = emailVerified;
 		}
 
-		public boolean isPhoneVerfied() {
+		public Boolean isPhoneVerfied() {
 			return phoneVerfied;
 		}
 
-		public void setPhoneVerfied(boolean phoneVerfied) {
+		public void setPhoneVerfied(Boolean phoneVerfied) {
 			this.phoneVerfied = phoneVerfied;
 		}
 
@@ -268,7 +268,7 @@ public class User extends BigBaseEntity { // implements UserDetails
 			this.password = password;
 		}
 
-		public void setEnabled(boolean enabled) {
+		public void setEnabled(Boolean enabled) {
 			this.enabled = enabled;
 		}
 
@@ -276,7 +276,7 @@ public class User extends BigBaseEntity { // implements UserDetails
 			return password;
 		}
 
-		public boolean isEnabled() {
+		public Boolean isEnabled() {
 			return enabled;
 		}
 

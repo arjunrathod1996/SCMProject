@@ -84,7 +84,7 @@ public class LeadActivity extends BigBaseEntity{
 	String message;
 	
 	@Column(name = "deleted")
-	boolean deleted;
+	Boolean deleted = false;
 	
 	@PrePersist
 	protected void onCreate() {
@@ -165,14 +165,13 @@ public class LeadActivity extends BigBaseEntity{
 		this.message = message;
 	}
 
-	public boolean isDeleted() {
+	public Boolean getDeleted() {
 		return deleted;
 	}
 
-	public void setDeleted(boolean deleted) {
+	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
 	}
 	
 	
 }
-

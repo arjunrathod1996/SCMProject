@@ -276,7 +276,7 @@ public class OTPController {
         User user = userRepository.findByPhoneNumber(mobileNumber);
 
         // Retrieve the role for the customer
-        Role role = roleRepository.findByName(Role.RoleType.ROLE_CUSTOMER);
+        Role role = roleRepository.findByName(Role.RoleType.ROLE_CUSOMER);
 
         // If user does not exist, create a new user with customer
 //        if (user == null) {

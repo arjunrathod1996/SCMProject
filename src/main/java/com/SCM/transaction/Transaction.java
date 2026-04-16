@@ -168,7 +168,7 @@ public class Transaction extends BigBaseEntity{
 	DeliveryStatus deliveryStatus ;
 	
 	@Column(name = "deleted")
-	boolean deleted;
+	Boolean deleted = false;
 	
 	@Column(name = "delivery_time")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -310,11 +310,11 @@ public class Transaction extends BigBaseEntity{
 		this.deliveryStatus = deliveryStatus;
 	}
 
-	public boolean isDeleted() {
+	public Boolean getDeleted() {
 		return deleted;
 	}
 
-	public void setDeleted(boolean deleted) {
+	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
 	}
 
@@ -327,4 +327,3 @@ public class Transaction extends BigBaseEntity{
 	}
 	
 }
-

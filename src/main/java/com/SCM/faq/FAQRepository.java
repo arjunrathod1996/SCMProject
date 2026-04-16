@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 public interface FAQRepository extends CrudRepository<FAQ, Long>{
 	
 	@Query(value = "SELECT *  FROM FAQ f "
-			+ "WHERE f.deleted = false "
+			+ "WHERE (f.deleted = false OR f.deleted IS NULL) "
 			+ "AND f.business_id =:businessID "
 			+ "ORDER BY f.order DESC",nativeQuery = true)
 	List<FAQ> fingFaqList(@Param("businessID") Long businessID);
@@ -27,7 +27,7 @@ public interface FAQRepository extends CrudRepository<FAQ, Long>{
             "JOIN FAQ fc "
             +"ON fl.id = fc.faq_List_id " +
             "WHERE fl.business_id = :businessId "
-            + "AND fc.deleted = false " +
+            + "AND (fc.deleted = false OR fc.deleted IS NULL) " +
             "GROUP BY fl.id "
             + "order by fl.order desc , fc.order asc", nativeQuery = true)
 	public List<Object[]> findAllFAQsByBusinessId(Long businessId);
