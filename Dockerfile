@@ -67,8 +67,8 @@ COPY --from=build /app/target/*.jar app.jar
 # 5. Expose the port (Informational, adjust if not 8080)
 EXPOSE 8080
 
-# Set Spring profile to prod so Railway DB is used
-ENV SPRING_PROFILES_ACTIVE=prod
+# Use default profile (k8s will override with environment variable)
+ENV SPRING_PROFILES_ACTIVE=default
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
