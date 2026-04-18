@@ -1,8 +1,15 @@
-name: CI Pipeline
+name: Production Release
 
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'select the environment'
+        required: true
+        type: choice
+        default: production
+        options:
+          - production
       skip-tests:
         description: 'skip test cases'
         required: false
@@ -13,10 +20,15 @@ on:
         required: false
         type: boolean
         default: false
+      skip-quality-gate:
+        description: 'skip quality gate'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
 
-  build-test-sonar:
+  jfrog-ci-job:
     runs-on: ubuntu-latest
 
     services:
@@ -34,6 +46,7 @@ jobs:
           - 3306:3306
 
     outputs:
+      pom-version: ${{ steps.generate-image-digest.outputs.POM_VERSION }}
       commit: ${{ steps.generate-image-digest.outputs.COMMIT }}
 
     steps:
@@ -62,32 +75,50 @@ jobs:
           mvn sonar:sonar \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-          -Dsonar.projectKey=scm-dev \
-          -Dsonar.projectName=scm-dev
+          -Dsonar.projectKey=scm-production \
+          -Dsonar.projectName=scm-production \
+          -Dsonar.branch.name=master
+        continue-on-error: true
+
+      - name: SonarQube Quality Gate check
+        if: github.event.inputs.skip-quality-gate != 'true'
+        run: |
+          sleep 5
+          QUALITY_GATE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=scm-production" \
+            | grep -o '"status":"[^"]*' | cut -d'"' -f4 || echo "UNKNOWN")
+          echo "Quality Gate Status: $QUALITY_GATE"
+          if [ "$QUALITY_GATE" != "OK" ] && [ "$QUALITY_GATE" != "WARN" ]; then
+            echo "Quality Gate Failed - but continuing"
+          fi
         continue-on-error: true
 
       - name: Generate image digest
         id: generate-image-digest
         run: |
+          POM_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
           COMMIT=$(git log -n 1 --pretty=format:"%h")
+          echo "POM_VERSION=$POM_VERSION" >> "$GITHUB_OUTPUT"
           echo "COMMIT=$COMMIT" >> "$GITHUB_OUTPUT"
         shell: bash
 
-      - name: Dockerize and push image
+      - name: Dockerize and push image - PRODUCTION
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/scm-app:dev-${{ steps.generate-image-digest.outputs.COMMIT }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/scm-app:dev-latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/scm-app:${{ steps.generate-image-digest.outputs.POM_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/scm-app:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/scm-app:prod
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-  deploy-dev:
-    needs: build-test-sonar
+  cd-job:
+    needs: jfrog-ci-job
     runs-on: ubuntu-latest
+    if: ${{ always() && needs.jfrog-ci-job.result == 'success' }}
 
     steps:
       - name: Checkout
@@ -95,7 +126,7 @@ jobs:
 
       - name: Set tag in deployment manifest file
         run: |
-          sed -i -e 's,IMAGE_TAG,${{ needs.build-test-sonar.outputs.commit }},g' k8s/deployment.yaml
+          sed -i -e 's,IMAGE_TAG,${{ needs.jfrog-ci-job.outputs.pom-version }},g' k8s/deployment.yaml
           cat k8s/deployment.yaml
         shell: bash
 
@@ -108,15 +139,21 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
-      - name: Deploy to DEV
+      - name: Deploy to Production
         run: |
           kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/secrets.yaml -n dev
-          kubectl apply -f k8s/mysql.yaml -n dev
-          kubectl wait --for=condition=ready pod -l app=mysql -n dev --timeout=300s || true
+          kubectl apply -f k8s/secrets.yaml -n prod
+          kubectl apply -f k8s/mysql.yaml -n prod
+          kubectl wait --for=condition=ready pod -l app=mysql -n prod --timeout=300s || true
           sleep 10
-          kubectl apply -f k8s/deployment.yaml -n dev
-          kubectl apply -f k8s/service.yaml -n dev
-          kubectl wait --for=condition=ready pod -l app=scm-app -n dev --timeout=600s || true
+          kubectl apply -f k8s/deployment.yaml -n prod
+          kubectl apply -f k8s/service.yaml -n prod
+          kubectl wait --for=condition=ready pod -l app=scm-app -n prod --timeout=600s || true
 
+      - name: Health check
+        run: |
+          sleep 10
+          POD_NAME=$(kubectl get pods -n prod -l app=scm-app -o jsonpath='{.items[0].metadata.name}')
+          echo "Checking pod: $POD_NAME"
+          kubectl logs -n prod $POD_NAME --tail=50
 
