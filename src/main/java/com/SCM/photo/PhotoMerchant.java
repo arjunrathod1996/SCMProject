@@ -20,15 +20,11 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 
 @Entity
 @Table(name = "photo_merchant")
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class PhotoMerchant extends BigBaseEntity{
 
 	
