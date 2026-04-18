@@ -3,6 +3,7 @@ package com.SCM.twilioConfig;
 
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -15,8 +16,9 @@ import lombok.Data;
 
 
 @Service
-@Configuration
-@ConfigurationProperties(prefix = "twilio")
+//@Configuration
+//@ConfigurationProperties(prefix = "twilio")
+@ConditionalOnProperty(name = "twilio.enabled", havingValue = "true")
 @Data
 public class TwilioService {
     

@@ -50,7 +50,7 @@ public class VerifyAndLoggedIn {
     @Autowired
     private PasswordService passwordService;
 
-    @Autowired
+    @Autowired(required = false)
     private TwilioService twilioService;
     
     

@@ -2,37 +2,46 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mysql
+  labels:
+    app: mysql
 spec:
+  type: ClusterIP
   selector:
     app: mysql
   ports:
-    - protocol: TCP
+    - name: mysql
+      protocol: TCP
       port: 3306
+      targetPort: 3306
 
 ---
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mysql-pvc
 spec:
   accessModes:
-    - ReadWriteOnce # This is suitable for a single MySQL pod
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi # Start with 5GB, adjust as needed
+      storage: 5Gi
 
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mysql
+  labels:
+    app: mysql
 spec:
-  replicas: 1 # For a database, a StatefulSet is often preferred over a Deployment for stable network identifiers and ordered updates. For simplicity, we'll stick with Deployment but note this for a true enterprise setup.
+  replicas: 1
   selector:
     matchLabels:
       app: mysql
   strategy:
-    type: Recreate # Ensures the old pod is terminated before the new one is created, preventing two pods from trying to claim the same PVC.
+    type: Recreate
   template:
     metadata:
       labels:
@@ -40,30 +49,55 @@ spec:
     spec:
       containers:
         - name: mysql
-          image: mysql:8.0 # Use a specific version tag instead of 'latest'
+          image: mysql:8.0
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3306
+
+          # ✅ FIXED INDENTATION (VERY IMPORTANT)
           env:
             - name: MYSQL_DATABASE
-              value: "SCM"
+              value: SEC
+
             - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
                   name: scm-secrets
                   key: db-username
+
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: scm-secrets
                   key: db-password
+
             - name: MYSQL_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: scm-secrets
-                  key: db-password
-          volumeMounts:
-            - name: mysql-persistent-storage
-              mountPath: /var/lib/mysql
+              value: root
+
+#          volumeMounts:
+#            - name: mysql-storage
+#              mountPath: /var/lib/mysql
+
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
           resources:
             requests:
               cpu: "500m"
@@ -71,7 +105,8 @@ spec:
             limits:
               cpu: "1"
               memory: "2Gi"
-      volumes:
-        - name: mysql-persistent-storage
-          persistentVolumeClaim:
-            claimName: mysql-pvc
+
+#      volumes:
+#        - name: mysql-storage
+#          persistentVolumeClaim:
+#            claimName: mysql-pvc
