@@ -1,0 +1,267 @@
+name: CI Pipeline - Development
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+    inputs:
+      skip-tests:
+        description: 'Skip test cases'
+        required: false
+        type: boolean
+        default: false
+      skip-sonar:
+        description: 'Skip SonarQube analysis'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: scm-app
+  DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # =========================
+  # BUILD & TEST JOB
+  # =========================
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: SEC
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 3306:3306
+
+    outputs:
+      image-tag: ${{ steps.generate-tag.outputs.IMAGE_TAG }}
+      commit-sha: ${{ steps.generate-tag.outputs.COMMIT_SHA }}
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Display job context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "=== Job Context ==="
+          echo "Branch: ${{ github.ref }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Actor: ${{ github.actor }}"
+
+      - name: ☕ Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: ⏳ Wait for MySQL to be ready
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..30}; do
+            if mysql -h 127.0.0.1 -uroot -proot -e "SELECT 1" > /dev/null 2>&1; then
+              echo "✅ MySQL is ready"
+              break
+            fi
+            echo "Attempt $i/30... Waiting for MySQL..."
+            sleep 2
+          done
+
+      - name: 🔨 Build with Maven
+        run: |
+          mvn -B -f pom.xml clean install \
+          -Dmaven.test.skip=${{ github.event.inputs.skip-tests || 'false' }} \
+          -DskipTests=${{ github.event.inputs.skip-tests || 'false' }}
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/SEC
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: 🧪 Run tests
+        if: github.event.inputs.skip-tests != 'true'
+        run: |
+          mvn -B -f pom.xml test -Dspring.profiles.active=test
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/SEC
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: 📊 SonarQube analysis
+        if: github.event.inputs.skip-sonar != 'true'
+        run: |
+          mvn sonar:sonar \
+          -Dsonar.projectKey=scm-project \
+          -Dsonar.projectName=SCM-App \
+          -Dsonar.sources=src/main/java \
+          -Dsonar.exclusions=**/*Test.java \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL || 'http://sonarqube:9000' }}
+        continue-on-error: true
+
+      - name: 📝 Generate image tag
+        id: generate-tag
+        run: |
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          IMAGE_TAG="dev-${COMMIT_SHA}-${TIMESTAMP}"
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "COMMIT_SHA=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "Generated tag: ${IMAGE_TAG}"
+
+      - name: 📦 Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: target/surefire-reports/
+          retention-days: 30
+
+  # =========================
+  # DOCKER BUILD & PUSH
+  # =========================
+  docker-build-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: 🏗️ Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🐳 Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-test.outputs.image-tag }}
+            ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:dev-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # =========================
+  # DEPLOY TO DEV
+  # =========================
+  deploy-dev:
+    name: Deploy to DEV
+    runs-on: ubuntu-latest
+    needs: docker-build-push
+    environment:
+      name: development
+      url: http://scm-app-service:8080
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: ⚙️ Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          kubectl cluster-info
+
+      - name: 🔄 Update deployment image tag
+        run: |
+          sed -i 's|IMAGE_TAG|${{ needs.docker-build-push.needs.build-and-test.outputs.image-tag }}|g' k8s/deployment.yaml
+          sed -i 's|ENV_NAME|dev|g' k8s/deployment.yaml
+          cat k8s/deployment.yaml
+
+      - name: 🚀 Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/secrets.yaml -n dev
+          kubectl apply -f k8s/mysql.yaml -n dev
+          kubectl apply -f k8s/deployment.yaml -n dev
+          kubectl apply -f k8s/service.yaml -n dev
+          
+          echo "Waiting for deployment to be ready..."
+          kubectl wait --for=condition=ready pod \
+            -l app=scm-app \
+            -n dev \
+            --timeout=5m
+
+      - name: ✅ Health check
+        run: |
+          POD_NAME=$(kubectl get pods -n dev -l app=scm-app -o jsonpath='{.items[0].metadata.name}')
+          echo "Health checking pod: $POD_NAME"
+          kubectl logs -n dev $POD_NAME --tail=50
+          
+          # Port forward and test
+          kubectl port-forward svc/scm-app-service 8080:80 -n dev &
+          sleep 5
+          curl -v http://localhost:8080/actuator/health || true
+
+      - name: 📧 Notify deployment
+        if: success()
+        run: |
+          echo "✅ Deployment to DEV successful"
+          echo "Image: ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-test.outputs.image-tag }}"
+
+  # =========================
+  # NOTIFICATIONS
+  # =========================
+  notify:
+    name: Notify Status
+    runs-on: ubuntu-latest
+    needs: [build-and-test, docker-build-push, deploy-dev]
+    if: always()
+
+    steps:
+      - name: 📊 Workflow Summary
+        run: |
+          echo "=== CI Pipeline Summary ==="
+          echo "Build Status: ${{ needs.build-and-test.result }}"
+          echo "Docker Status: ${{ needs.docker-build-push.result }}"
+          echo "Deploy Status: ${{ needs.deploy-dev.result }}"
+          echo ""
+          echo "Branch: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+
+      - name: ❌ Fail if any job failed
+        if: failure()
+        run: exit 1
+
+

@@ -1,0 +1,468 @@
+name: Production Release Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment-strategy:
+        description: 'Deployment strategy'
+        required: true
+        type: choice
+        default: rolling
+        options:
+          - rolling
+          - blue-green
+          - canary
+          
+      skip-tests:
+        description: 'Skip test cases'
+        required: false
+        type: boolean
+        default: false
+        
+      skip-sonar:
+        description: 'Skip SonarQube analysis'
+        required: false
+        type: boolean
+        default: false
+        
+      require-approval:
+        description: 'Require approval before deployment'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: scm-app
+  DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+jobs:
+
+  # =========================
+  # PRE-DEPLOYMENT CHECKS
+  # =========================
+  pre-deployment-checks:
+    name: Pre-Deployment Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ✅ Verify branch is master
+        run: |
+          if [ "${{ github.ref }}" != "refs/heads/master" ] && [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "❌ This workflow can only run on master/main branch"
+            exit 1
+          fi
+          echo "✅ Branch verified: ${{ github.ref }}"
+
+      - name: ✅ Verify tag/version exists
+        run: |
+          VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Project Version: $VERSION"
+          
+          if [[ $VERSION == *"SNAPSHOT"* ]]; then
+            echo "⚠️  Warning: This is a SNAPSHOT version"
+          fi
+
+      - name: 📋 Display deployment plan
+        run: |
+          echo "╔════════════════════════════════════════╗"
+          echo "║     PRODUCTION DEPLOYMENT PLAN         ║"
+          echo "╚════════════════════════════════════════╝"
+          echo ""
+          echo "Branch: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Strategy: ${{ github.event.inputs.deployment-strategy }}"
+          echo "Skip Tests: ${{ github.event.inputs.skip-tests }}"
+          echo "Skip SonarQube: ${{ github.event.inputs.skip-sonar }}"
+          echo "Require Approval: ${{ github.event.inputs.require-approval }}"
+          echo ""
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Timestamp: $(date)"
+
+  # =========================
+  # BUILD, TEST & QUALITY
+  # =========================
+  build-test-sonar:
+    name: Build, Test & Quality Gate
+    runs-on: ubuntu-latest
+    needs: pre-deployment-checks
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: SEC
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 3306:3306
+
+    outputs:
+      release-version: ${{ steps.generate-release.outputs.RELEASE_VERSION }}
+      commit-sha: ${{ steps.generate-release.outputs.COMMIT_SHA }}
+      build-number: ${{ github.run_number }}
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ☕ Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: ⏳ Wait for MySQL to be ready
+        run: |
+          echo "Waiting for MySQL..."
+          for i in {1..30}; do
+            if mysql -h 127.0.0.1 -uroot -proot -e "SELECT 1" > /dev/null 2>&1; then
+              echo "✅ MySQL is ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: 🔨 Build with Maven - PRODUCTION
+        run: |
+          mvn -B -f pom.xml clean install \
+          -P production \
+          -Dmaven.test.skip=${{ github.event.inputs.skip-tests || 'false' }} \
+          -DskipTests=${{ github.event.inputs.skip-tests || 'false' }}
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/SEC
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: 🧪 Run comprehensive tests
+        if: github.event.inputs.skip-tests != 'true'
+        run: |
+          mvn -B -f pom.xml test \
+          -Dspring.profiles.active=test \
+          --fail-at-end
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/SEC
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: 📊 SonarQube Quality Analysis
+        if: github.event.inputs.skip-sonar != 'true'
+        run: |
+          mvn sonar:sonar \
+          -Dsonar.projectKey=scm-project-prod \
+          -Dsonar.projectName=SCM-App-Production \
+          -Dsonar.sources=src/main/java \
+          -Dsonar.tests=src/test/java \
+          -Dsonar.exclusions=**/*Test.java \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+
+      - name: 🏆 SonarQube Quality Gate Check
+        if: github.event.inputs.skip-sonar != 'true'
+        run: |
+          sleep 10
+          QUALITY_GATE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=scm-project-prod" \
+            | grep -o '"status":"[^"]*' | cut -d'"' -f4)
+          
+          echo "Quality Gate Status: $QUALITY_GATE"
+          
+          if [ "$QUALITY_GATE" != "OK" ]; then
+            echo "⚠️  Quality Gate Failed"
+            exit 1
+          fi
+          echo "✅ Quality Gate Passed"
+
+      - name: 📦 Generate release version
+        id: generate-release
+        run: |
+          RELEASE_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          BUILD_NUMBER=${{ github.run_number }}
+          
+          FINAL_VERSION="${RELEASE_VERSION}-b${BUILD_NUMBER}"
+          
+          echo "RELEASE_VERSION=${FINAL_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "COMMIT_SHA=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
+          
+          echo "Release Version: ${FINAL_VERSION}"
+
+      - name: 📦 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-artifacts
+          path: target/*.jar
+          retention-days: 90
+
+  # =========================
+  # DOCKER BUILD & PUSH
+  # =========================
+  docker-build-release:
+    name: Build & Push Docker Image - PRODUCTION
+    runs-on: ubuntu-latest
+    needs: build-test-sonar
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: 🏗️ Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🐳 Build and push Production Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.build-test-sonar.outputs.release-version }}
+            ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:prod
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # =========================
+  # APPROVAL GATE
+  # =========================
+  approval-gate:
+    name: Approval Gate
+    runs-on: ubuntu-latest
+    needs: docker-build-release
+    if: github.event.inputs.require-approval == 'true'
+    environment:
+      name: production-approval
+
+    steps:
+      - name: ⏸️ Waiting for approval
+        run: |
+          echo "⏸️  Workflow paused - waiting for approval to proceed to production"
+          echo ""
+          echo "This workflow requires manual approval before deploying to PRODUCTION"
+
+  # =========================
+  # PRODUCTION DEPLOYMENT
+  # =========================
+  deploy-production:
+    name: Deploy to PRODUCTION
+    runs-on: ubuntu-latest
+    needs: [build-test-sonar, docker-build-release, approval-gate]
+    if: always() && (needs.approval-gate.result == 'success' || github.event.inputs.require-approval != 'true')
+    environment:
+      name: production
+      url: http://scm-app-service-prod:8080
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: ⚙️ Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          kubectl cluster-info
+
+      - name: 📋 Create production namespace
+        run: |
+          kubectl apply -f k8s/namespace.yaml || true
+          kubectl label namespace prod environment=production --overwrite || true
+
+      - name: 🔄 Update deployment configuration
+        run: |
+          sed -i 's|IMAGE_TAG|${{ needs.build-test-sonar.outputs.release-version }}|g' k8s/deployment.yaml
+          sed -i 's|ENV_NAME|prod|g' k8s/deployment.yaml
+          sed -i 's|app-replicas|3|g' k8s/deployment.yaml
+          sed -i 's|deployment-strategy|${{ github.event.inputs.deployment-strategy }}|g' k8s/deployment.yaml
+          
+          echo "=== Production Deployment Configuration ==="
+          cat k8s/deployment.yaml
+
+      - name: 🔄 Update strategy
+        run: |
+          STRATEGY=${{ github.event.inputs.deployment-strategy }}
+          case $STRATEGY in
+            rolling)
+              echo "Strategy: Rolling Update"
+              kubectl set strategy deployment/scm-app -n prod \
+                --type=RollingUpdate --max-surge=1 --max-unavailable=0 || true
+              ;;
+            blue-green)
+              echo "Strategy: Blue-Green Deployment"
+              ;;
+            canary)
+              echo "Strategy: Canary Deployment (5%)"
+              ;;
+          esac
+
+      - name: 🚀 Deploy MySQL (if not exists)
+        run: |
+          kubectl apply -f k8s/mysql.yaml -n prod || true
+          echo "Waiting for MySQL to be ready..."
+          kubectl wait --for=condition=ready pod \
+            -l app=mysql \
+            -n prod \
+            --timeout=10m || true
+
+      - name: 🚀 Deploy production secrets & configuration
+        run: |
+          kubectl apply -f k8s/secrets.yaml -n prod
+          echo "✅ Production secrets configured"
+
+      - name: 🚀 Deploy application (Production)
+        run: |
+          kubectl apply -f k8s/deployment.yaml -n prod
+          kubectl apply -f k8s/service.yaml -n prod
+          
+          echo "Waiting for production deployment to be ready..."
+          kubectl wait --for=condition=ready pod \
+            -l app=scm-app \
+            -n prod \
+            --timeout=15m
+
+      - name: 📊 Verify production deployment
+        run: |
+          echo "=== Production Deployment Status ==="
+          kubectl get deployments -n prod
+          kubectl get pods -n prod -o wide
+          kubectl get svc -n prod
+          kubectl get ingress -n prod || true
+          
+          POD_NAME=$(kubectl get pods -n prod -l app=scm-app -o jsonpath='{.items[0].metadata.name}')
+          echo ""
+          echo "=== Production Pod Logs (Last 100 lines) ==="
+          kubectl logs -n prod $POD_NAME --tail=100 || true
+
+      - name: ✅ Production health check
+        run: |
+          echo "Running comprehensive health checks..."
+          sleep 15
+          
+          POD_NAME=$(kubectl get pods -n prod -l app=scm-app -o jsonpath='{.items[0].metadata.name}')
+          
+          # Check pod readiness
+          READY=$(kubectl get pod $POD_NAME -n prod -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+          echo "Pod Ready Status: $READY"
+          
+          # Port forward and test
+          kubectl port-forward svc/scm-app-service 8080:80 -n prod &
+          PF_PID=$!
+          sleep 5
+          
+          HEALTH=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health || echo "000")
+          READINESS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health/readiness || echo "000")
+          
+          kill $PF_PID || true
+          
+          echo "Health Endpoint: $HEALTH"
+          echo "Readiness Endpoint: $READINESS"
+          
+          if [ "$HEALTH" = "200" ] && [ "$READINESS" = "200" ]; then
+            echo "✅ Production application is healthy and ready"
+          else
+            echo "❌ Health checks failed"
+            exit 1
+          fi
+
+      - name: 📊 Smoke tests
+        run: |
+          echo "Running smoke tests on production..."
+          sleep 5
+          
+          kubectl port-forward svc/scm-app-service 8080:80 -n prod &
+          PF_PID=$!
+          sleep 3
+          
+          # Test basic endpoint
+          curl -v http://localhost:8080/ || true
+          
+          kill $PF_PID || true
+          
+          echo "✅ Smoke tests completed"
+
+      - name: 📧 Deployment Success Notification
+        if: success()
+        run: |
+          echo "╔════════════════════════════════════════╗"
+          echo "║  ✅ PRODUCTION DEPLOYMENT SUCCESSFUL   ║"
+          echo "╚════════════════════════════════════════╝"
+          echo ""
+          echo "Release Version: ${{ needs.build-test-sonar.outputs.release-version }}"
+          echo "Image: ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.build-test-sonar.outputs.release-version }}"
+          echo "Namespace: prod"
+          echo "Deployment Strategy: ${{ github.event.inputs.deployment-strategy }}"
+          echo "Timestamp: $(date)"
+          echo ""
+          echo "Deployed by: ${{ github.actor }}"
+
+      - name: ❌ Deployment Failed Notification
+        if: failure()
+        run: |
+          echo "╔════════════════════════════════════════╗"
+          echo "║  ❌ PRODUCTION DEPLOYMENT FAILED       ║"
+          echo "╚════════════════════════════════════════╝"
+          echo ""
+          echo "Release Version: ${{ needs.build-test-sonar.outputs.release-version }}"
+          echo "Failed at: $(date)"
+          exit 1
+
+  # =========================
+  # POST-DEPLOYMENT
+  # =========================
+  post-deployment:
+    name: Post-Deployment Tasks
+    runs-on: ubuntu-latest
+    needs: [build-test-sonar, docker-build-release, deploy-production]
+    if: always()
+
+    steps:
+      - name: 📊 Pipeline Completion Summary
+        run: |
+          echo "╔════════════════════════════════════════╗"
+          echo "║   PRODUCTION PIPELINE COMPLETED        ║"
+          echo "╚════════════════════════════════════════╝"
+          echo ""
+          echo "Pre-Deployment: ✅"
+          echo "Build & Quality: ${{ needs.build-test-sonar.result }}"
+          echo "Docker Build: ${{ needs.docker-build-release.result }}"
+          echo "Deployment: ${{ needs.deploy-production.result }}"
+          echo ""
+          echo "Release: ${{ needs.build-test-sonar.outputs.release-version }}"
+          echo "Commit: ${{ needs.build-test-sonar.outputs.commit-sha }}"
+          echo "Build: ${{ needs.build-test-sonar.outputs.build-number }}"
+
+      - name: ✅ Mark successful deployment
+        if: success()
+        run: |
+          echo "✅ Production deployment completed successfully"
+          echo "Application is now live in production"
+
+      - name: ❌ Mark failed deployment
+        if: failure()
+        run: |
+          echo "❌ Production deployment failed"
+          exit 1
+
+

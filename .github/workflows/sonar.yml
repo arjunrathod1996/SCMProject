@@ -1,0 +1,117 @@
+name: SonarQube Quality Gate
+
+on:
+  push:
+    branches: [dev, master, main, homol]
+  pull_request:
+    branches: [dev, master, main, homol]
+  workflow_dispatch:
+
+env:
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+jobs:
+  sonarqube-analysis:
+    name: SonarQube Code Analysis
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: SEC
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 3306:3306
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ☕ Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 🔨 Build with Maven
+        run: |
+          mvn -B -f pom.xml clean install -DskipTests
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/SEC
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: 📊 Run SonarQube Analysis
+        run: |
+          PROJECT_KEY="scm-project-${{ github.ref_name }}"
+          PROJECT_NAME="SCM-App-${{ github.ref_name }}"
+          
+          mvn sonar:sonar \
+          -Dsonar.projectKey=$PROJECT_KEY \
+          -Dsonar.projectName=$PROJECT_NAME \
+          -Dsonar.sources=src/main/java \
+          -Dsonar.tests=src/test/java \
+          -Dsonar.exclusions=**/*Test.java,**/generated-sources/** \
+          -Dsonar.login=${{ env.SONAR_TOKEN }} \
+          -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
+          -Dsonar.branch.name=${{ github.ref_name }}
+
+      - name: 🏆 Quality Gate Check
+        run: |
+          PROJECT_KEY="scm-project-${{ github.ref_name }}"
+          sleep 5
+          
+          QUALITY_GATE=$(curl -s -u "${{ env.SONAR_TOKEN }}:" \
+            "${{ env.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=$PROJECT_KEY" \
+            | grep -o '"status":"[^"]*' | cut -d'"' -f4 || echo "UNKNOWN")
+          
+          echo "Quality Gate Status: $QUALITY_GATE"
+          
+          if [ "$QUALITY_GATE" = "OK" ]; then
+            echo "✅ Quality Gate PASSED"
+            exit 0
+          elif [ "$QUALITY_GATE" = "WARN" ]; then
+            echo "⚠️  Quality Gate WARNING"
+            exit 0
+          else
+            echo "❌ Quality Gate FAILED"
+            exit 1
+          fi
+
+      - name: 📝 Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const PROJECT_KEY = "scm-project-${{ github.ref_name }}";
+            const SONAR_URL = "${{ env.SONAR_HOST_URL }}";
+            
+            const response = await fetch(
+              `${SONAR_URL}/api/qualitygates/project_status?projectKey=${PROJECT_KEY}`,
+              {
+                headers: {
+                  'Authorization': `Basic ${Buffer.from('${{ env.SONAR_TOKEN }}:').toString('base64')}`
+                }
+              }
+            );
+            
+            const data = await response.json();
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## SonarQube Quality Gate\n\n✅ Analysis completed\n\n**Status**: ${data.projectStatus.status}\n\n[View Report](${SONAR_URL}/dashboard?id=${PROJECT_KEY})`
+            });
+
+
