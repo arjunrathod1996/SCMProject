@@ -1,4 +1,4 @@
-name: staging and release
+name: Production Release Pipeline
 
 on:
   push:
