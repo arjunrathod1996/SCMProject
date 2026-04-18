@@ -1,0 +1,94 @@
+name: Deploy to Kubernetes
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: "Skip test cases"
+        required: false
+        type: boolean
+        default: false
+      skip_sonar:
+        description: "Skip sonar scanner"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/scm-app
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+
+      - name: Deploy to DEV
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          kubectl create namespace dev || true
+          
+          # Deploy secrets first
+          envsubst < k8s/secrets.yaml | kubectl apply -f - -n dev
+          
+          # Deploy MySQL and wait for readiness
+          kubectl apply -f k8s/mysql.yaml -n dev
+          echo "Waiting for MySQL to be ready..."
+          kubectl wait --for=condition=ready pod -l app=mysql -n dev --timeout=300s || true
+          sleep 10
+          
+          # Deploy app
+          kubectl apply -f k8s/deployment.yaml -n dev
+          kubectl apply -f k8s/service.yaml -n dev
+          
+          # Update image
+          kubectl set image deployment/scm-app \
+            scm-app=${IMAGE_NAME}:${IMAGE_TAG} \
+            -n dev
+          
+          # Wait for deployment to be ready
+          kubectl rollout status deployment/scm-app -n dev --timeout=600s || true
+
+      - name: Deploy to PROD
+        if: github.ref == 'refs/heads/main'
+        run: |
+          kubectl create namespace prod || true
+          
+          # Deploy secrets first
+          envsubst < k8s/secrets.yaml | kubectl apply -f - -n prod
+          
+          # Deploy MySQL and wait for readiness
+          kubectl apply -f k8s/mysql.yaml -n prod
+          echo "Waiting for MySQL to be ready..."
+          kubectl wait --for=condition=ready pod -l app=mysql -n prod --timeout=300s || true
+          sleep 10
+          
+          # Deploy app
+          kubectl apply -f k8s/deployment.yaml -n prod
+          kubectl apply -f k8s/service.yaml -n prod
+          
+          # Update image
+          kubectl set image deployment/scm-app \
+            scm-app=${IMAGE_NAME}:${IMAGE_TAG} \
+            -n prod
+          
+          # Wait for deployment to be ready
+          kubectl rollout status deployment/scm-app -n prod --timeout=600s || true

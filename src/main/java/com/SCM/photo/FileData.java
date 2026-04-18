@@ -10,10 +10,14 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Entity
 @Table(name = "file_data")
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class FileData extends BigBaseEntity{
 	
 	
