@@ -36,7 +36,30 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build and test
+      - name: Check for missing test files (Warn only)
+        run: |
+          echo "🔍 Checking modified Java files for corresponding tests..."
+          
+          # Get list of .java files changed in this PR inside src/main/java
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD | grep '^src/main/java/.*\.java$' || true)
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No main Java files changed. Skipping test check."
+            exit 0
+          fi
+
+          for file in $CHANGED_FILES; do
+            # Convert src/main/java/.../MyClass.java to src/test/java/.../MyClassTest.java
+            TEST_FILE=$(echo "$file" | sed 's|src/main/java|src/test/java|' | sed 's|\.java$|Test.java|')
+          
+            if [ ! -f "$TEST_FILE" ]; then
+              echo "⚠️ NOTE: Please write test cases for $file"
+            else
+              echo "✅ Test found for $file"
+            fi
+          done
+
+      - name: Build, Test, and Generate Coverage
         run: |
           mvn -B -f pom.xml clean verify
         env:
@@ -54,4 +77,5 @@ jobs:
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
             -Dsonar.pullrequest.branch=${{ github.head_ref }} \
             -Dsonar.pullrequest.base=${{ github.base_ref }} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
             -Dsonar.qualitygate.wait=true
