@@ -1,0 +1,179 @@
+name: Production Release Pipeline
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'select the environment'
+        required: true
+        type: choice
+        default: production
+        options:
+          - production
+
+      skip-tests:
+        description: 'skip test cases'
+        required: false
+        type: boolean
+        default: false
+
+      skip-sonar:
+        description: 'skip sonar scanner'
+        required: false
+        type: boolean
+        default: false
+
+      skip-quality-gate:
+        description: 'skip quality gate'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+
+  # =========================
+  # CI JOB - BUILD & TEST
+  # =========================
+  ci-job:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: SEC
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 3306:3306
+
+    outputs:
+      pom-version: ${{ steps.generate-image-digest.outputs.POM_VERSION }}
+      commit: ${{ steps.generate-image-digest.outputs.COMMIT }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Maven and JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and test
+        run: |
+          mvn -B -f pom.xml clean install \
+          -Dmaven.test.skip=${{ github.event.inputs.skip-tests || github.event_name == 'push' }}
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/SEC
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: Sonar analysis
+        if: github.event.inputs.skip-sonar != 'true'
+        run: |
+          mvn sonar:sonar \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.projectKey=scm-production \
+          -Dsonar.projectName=scm-production \
+          -Dsonar.branch.name=${GITHUB_REF}
+        continue-on-error: true
+
+      - name: SonarQube Quality Gate check
+        if: github.event.inputs.skip-quality-gate != 'true'
+        run: |
+          sleep 5
+          QUALITY_GATE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=scm-production" \
+            | grep -o '"status":"[^"]*' | cut -d'"' -f4 || echo "UNKNOWN")
+          echo "Quality Gate Status: $QUALITY_GATE"
+          if [ "$QUALITY_GATE" != "OK" ] && [ "$QUALITY_GATE" != "WARN" ]; then
+            echo "Quality Gate Warning - but continuing"
+          fi
+        continue-on-error: true
+
+      - name: Generate image digest
+        id: generate-image-digest
+        run: |
+          POM_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
+          COMMIT=$(git log -n 1 --pretty=format:"%h")
+          echo "POM_VERSION=$POM_VERSION" >> "$GITHUB_OUTPUT"
+          echo "COMMIT=$COMMIT" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Dockerize and push image - PRODUCTION
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/scm-app:${{ steps.generate-image-digest.outputs.POM_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/scm-app:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/scm-app:prod
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+  # =========================
+  # CD JOB - DEPLOY
+  # =========================
+  cd-job:
+    needs: ci-job
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.ci-job.result == 'success' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set tag in deployment manifest file
+        run: |
+          sed -i -e 's,IMAGE_TAG,${{ needs.ci-job.outputs.pom-version }},g' k8s/deployment.yaml
+          cat k8s/deployment.yaml
+        shell: bash
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Deploy to Production
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/configmap.yaml -n prod || true
+          kubectl apply -f k8s/secrets.yaml -n prod
+          kubectl apply -f k8s/mysql.yaml -n prod
+          
+          echo "Waiting for MySQL to be ready..."
+          kubectl wait --for=condition=ready pod -l app=mysql -n prod --timeout=300s || true
+          sleep 10
+          
+          kubectl apply -f k8s/deployment.yaml -n prod
+          kubectl apply -f k8s/service.yaml -n prod
+          kubectl apply -f k8s/ingress.yaml -n prod || true
+          
+          echo "Waiting for deployment to be ready..."
+          kubectl wait --for=condition=ready pod -l app=scm-app -n prod --timeout=600s || true
+
+      - name: Health check
+        run: |
+          sleep 10
+          POD_NAME=$(kubectl get pods -n prod -l app=scm-app -o jsonpath='{.items[0].metadata.name}')
+          echo "Checking pod: $POD_NAME"
+          kubectl logs -n prod $POD_NAME --tail=50
+
+
+

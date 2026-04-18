@@ -1,0 +1,122 @@
+name: CI Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip-tests:
+        description: 'skip test cases'
+        required: false
+        type: boolean
+        default: false
+      skip-sonar:
+        description: 'skip sonar scanner'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+
+  build-test-sonar:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: SEC
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 3306:3306
+
+    outputs:
+      commit: ${{ steps.generate-image-digest.outputs.COMMIT }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Maven and JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and test
+        run: |
+          mvn -B -f pom.xml clean install \
+          -Dmaven.test.skip=${{ github.event.inputs.skip-tests }}
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/SEC
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: Sonar analysis
+        if: github.event.inputs.skip-sonar != 'true'
+        run: |
+          mvn sonar:sonar \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.projectKey=scm-dev \
+          -Dsonar.projectName=scm-dev
+        continue-on-error: true
+
+      - name: Generate image digest
+        id: generate-image-digest
+        run: |
+          COMMIT=$(git log -n 1 --pretty=format:"%h")
+          echo "COMMIT=$COMMIT" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Dockerize and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/scm-app:dev-${{ steps.generate-image-digest.outputs.COMMIT }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/scm-app:dev-latest
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+  deploy-dev:
+    needs: build-test-sonar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set tag in deployment manifest file
+        run: |
+          sed -i -e 's,IMAGE_TAG,${{ needs.build-test-sonar.outputs.commit }},g' k8s/deployment.yaml
+          cat k8s/deployment.yaml
+        shell: bash
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Deploy to DEV
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/secrets.yaml -n dev
+          kubectl apply -f k8s/mysql.yaml -n dev
+          kubectl wait --for=condition=ready pod -l app=mysql -n dev --timeout=300s || true
+          sleep 10
+          kubectl apply -f k8s/deployment.yaml -n dev
+          kubectl apply -f k8s/service.yaml -n dev
+          kubectl wait --for=condition=ready pod -l app=scm-app -n dev --timeout=600s || true
+
+

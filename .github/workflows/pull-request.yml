@@ -1,0 +1,84 @@
+name: pull-request-job
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master, main, dev]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: SEC
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 3306:3306
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Maven and JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Check for missing test files (Warn only)
+        run: |
+          echo "🔍 Checking modified Java files for corresponding tests..."
+          
+          # Get list of .java files changed in this PR inside src/main/java
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD | grep '^src/main/java/.*\.java$' || true)
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No main Java files changed. Skipping test check."
+            exit 0
+          fi
+
+          for file in $CHANGED_FILES; do
+            # Convert src/main/java/.../MyClass.java to src/test/java/.../MyClassTest.java
+            TEST_FILE=$(echo "$file" | sed 's|src/main/java|src/test/java|' | sed 's|\.java$|Test.java|')
+          
+            if [ ! -f "$TEST_FILE" ]; then
+              echo "⚠️ NOTE: Please write test cases for $file"
+            else
+              echo "✅ Test found for $file"
+            fi
+          done
+
+      - name: Build, Test, and Generate Coverage
+        run: |
+          mvn -B -f pom.xml clean verify
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/SEC
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: SonarCloud Analysis & Quality Gate
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.organization=arjunrathod1996 \
+            -Dsonar.projectKey=arjunrathod1996_SCMProject \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.base=${{ github.base_ref }} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.qualitygate.wait=true

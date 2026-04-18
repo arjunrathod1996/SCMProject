@@ -1,0 +1,54 @@
+name: SonarQube Quality Check
+
+on:
+  push:
+    branches: [master, dev]
+  workflow_dispatch:
+
+jobs:
+  sonarqube-analysis:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: SEC
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 3306:3306
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Maven and JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build
+        run: |
+          mvn -B -f pom.xml clean install -DskipTests
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/SEC
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: SonarQube Analysis
+        run: |
+          mvn sonar:sonar \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.projectKey=scm-${{ github.ref_name }} \
+          -Dsonar.projectName=scm-${{ github.ref_name }} \
+          -Dsonar.branch.name=${{ github.ref_name }}
+        continue-on-error: true
+

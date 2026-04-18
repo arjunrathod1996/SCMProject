@@ -1,0 +1,332 @@
+name: UAT/Homol Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select environment'
+        required: true
+        type: choice
+        default: homol
+        options:
+          - homol
+          
+      skip-tests:
+        description: 'Skip test cases'
+        required: false
+        type: boolean
+        default: false
+        
+      skip-sonar:
+        description: 'Skip SonarQube analysis'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: scm-app
+  DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+jobs:
+
+  # =========================
+  # BUILD & TEST JOB
+  # =========================
+  build-test-sonar:
+    name: Build, Test & SonarQube
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: SEC
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 3306:3306
+
+    outputs:
+      image-version: ${{ steps.generate-version.outputs.VERSION }}
+      commit-sha: ${{ steps.generate-version.outputs.COMMIT_SHA }}
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Display environment & context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "=== Pipeline Context ==="
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Triggered by: ${{ github.actor }}"
+
+      - name: ☕ Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: ⏳ Wait for MySQL to be ready
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..30}; do
+            if mysql -h 127.0.0.1 -uroot -proot -e "SELECT 1" > /dev/null 2>&1; then
+              echo "✅ MySQL is ready"
+              break
+            fi
+            echo "Attempt $i/30..."
+            sleep 2
+          done
+
+      - name: 🔨 Build with Maven
+        run: |
+          mvn -B -f pom.xml clean install \
+          -Dmaven.test.skip=${{ github.event.inputs.skip-tests || 'false' }} \
+          -DskipTests=${{ github.event.inputs.skip-tests || 'false' }}
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/SEC
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: 🧪 Run tests
+        if: github.event.inputs.skip-tests != 'true'
+        run: |
+          mvn -B -f pom.xml test -Dspring.profiles.active=test
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/SEC
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: 📊 SonarQube analysis
+        if: github.event.inputs.skip-sonar != 'true'
+        run: |
+          mvn sonar:sonar \
+          -Dsonar.projectKey=scm-project-homol \
+          -Dsonar.projectName=SCM-App-Homol \
+          -Dsonar.sources=src/main/java \
+          -Dsonar.exclusions=**/*Test.java \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.branch.name=homol
+        continue-on-error: true
+
+      - name: 📝 Generate version tag
+        id: generate-version
+        run: |
+          VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          
+          IMAGE_VERSION="${{ github.event.inputs.environment }}-${VERSION}-${COMMIT_SHA}-${TIMESTAMP}"
+          
+          echo "VERSION=${IMAGE_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "COMMIT_SHA=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "POM_VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+          
+          echo "Generated version: ${IMAGE_VERSION}"
+
+      - name: 📦 Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: homol-test-reports
+          path: target/surefire-reports/
+          retention-days: 30
+
+  # =========================
+  # DOCKER BUILD & PUSH
+  # =========================
+  docker-build-push:
+    name: Build & Push Docker Image - ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    needs: build-test-sonar
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: 🏗️ Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🐳 Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.build-test-sonar.outputs.image-version }}
+            ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.environment }}-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # =========================
+  # DEPLOY TO HOMOL/UAT
+  # =========================
+  deploy-homol:
+    name: Deploy to ${{ github.event.inputs.environment }} Environment
+    runs-on: ubuntu-latest
+    needs: docker-build-push
+    environment:
+      name: homol
+      url: http://scm-app-service-homol:8080
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: ⚙️ Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          kubectl cluster-info
+
+      - name: 📋 Create namespace
+        run: |
+          kubectl apply -f k8s/namespace.yaml || true
+          kubectl label namespace homol environment=homol --overwrite || true
+
+      - name: 🔄 Update deployment configuration
+        run: |
+          sed -i 's|IMAGE_TAG|${{ needs.docker-build-push.needs.build-test-sonar.outputs.image-version }}|g' k8s/deployment.yaml
+          sed -i 's|ENV_NAME|homol|g' k8s/deployment.yaml
+          sed -i 's|app-replicas|2|g' k8s/deployment.yaml
+          
+          echo "=== Updated Deployment ==="
+          cat k8s/deployment.yaml
+
+      - name: 🚀 Deploy MySQL (if not exists)
+        run: |
+          kubectl apply -f k8s/mysql.yaml -n homol || true
+          echo "Waiting for MySQL to be ready..."
+          kubectl wait --for=condition=ready pod \
+            -l app=mysql \
+            -n homol \
+            --timeout=10m || true
+
+      - name: 🚀 Deploy secrets & configuration
+        run: |
+          kubectl apply -f k8s/secrets.yaml -n homol
+          echo "✅ Secrets configured"
+
+      - name: 🚀 Deploy application
+        run: |
+          kubectl apply -f k8s/deployment.yaml -n homol
+          kubectl apply -f k8s/service.yaml -n homol
+          
+          echo "Waiting for application to be ready..."
+          kubectl wait --for=condition=ready pod \
+            -l app=scm-app \
+            -n homol \
+            --timeout=10m
+
+      - name: 🔍 Verify deployment
+        run: |
+          echo "=== Deployment Status ==="
+          kubectl get deployments -n homol
+          kubectl get pods -n homol
+          kubectl get svc -n homol
+          
+          POD_NAME=$(kubectl get pods -n homol -l app=scm-app -o jsonpath='{.items[0].metadata.name}')
+          echo ""
+          echo "=== Pod Logs (Last 50 lines) ==="
+          kubectl logs -n homol $POD_NAME --tail=50 || true
+
+      - name: ✅ Health check
+        run: |
+          echo "Waiting for application health..."
+          sleep 10
+          
+          POD_NAME=$(kubectl get pods -n homol -l app=scm-app -o jsonpath='{.items[0].metadata.name}')
+          
+          kubectl port-forward svc/scm-app-service 8080:80 -n homol &
+          PF_PID=$!
+          sleep 3
+          
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health || echo "000")
+          
+          kill $PF_PID || true
+          
+          if [ "$HEALTH_STATUS" = "200" ]; then
+            echo "✅ Application is healthy"
+          else
+            echo "⚠️  Health check returned: $HEALTH_STATUS"
+          fi
+
+      - name: 📧 Deployment notification
+        if: success()
+        run: |
+          echo "✅ Deployment to ${{ github.event.inputs.environment }} successful"
+          echo ""
+          echo "=== Deployment Details ==="
+          echo "Image: ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.docker-build-push.needs.build-test-sonar.outputs.image-version }}"
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Namespace: homol"
+          echo "Timestamp: $(date)"
+
+      - name: ❌ Deployment failed
+        if: failure()
+        run: |
+          echo "❌ Deployment to ${{ github.event.inputs.environment }} failed"
+          exit 1
+
+  # =========================
+  # COMPLETION NOTIFICATION
+  # =========================
+  notify-completion:
+    name: Notify Pipeline Completion
+    runs-on: ubuntu-latest
+    needs: [build-test-sonar, docker-build-push, deploy-homol]
+    if: always()
+
+    steps:
+      - name: 📊 Pipeline Summary
+        run: |
+          echo "╔════════════════════════════════════════╗"
+          echo "║    UAT/HOMOL Pipeline Summary          ║"
+          echo "╚════════════════════════════════════════╝"
+          echo ""
+          echo "Build & Test: ${{ needs.build-test-sonar.result }}"
+          echo "Docker Build: ${{ needs.docker-build-push.result }}"
+          echo "Deployment:   ${{ needs.deploy-homol.result }}"
+          echo ""
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Timestamp: $(date)"
+
+      - name: ✅ Mark as successful
+        if: success()
+        run: echo "✅ All pipeline jobs completed successfully"
+
+      - name: ❌ Mark as failed
+        if: failure()
+        run: |
+          echo "❌ Pipeline failed"
+          exit 1
+
+
