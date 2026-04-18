@@ -12,19 +12,16 @@ on:
           - rolling
           - blue-green
           - canary
-          
       skip-tests:
         description: 'Skip test cases'
         required: false
         type: boolean
         default: false
-        
       skip-sonar:
         description: 'Skip SonarQube analysis'
         required: false
         type: boolean
         default: false
-        
       require-approval:
         description: 'Require approval before deployment'
         required: false
@@ -32,6 +29,7 @@ on:
         default: true
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   REGISTRY: docker.io
   IMAGE_NAME: scm-app
   DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -45,7 +43,7 @@ jobs:
   pre-deployment-checks:
     name: Pre-Deployment Checks
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -90,7 +88,7 @@ jobs:
     name: Build, Test & Quality Gate
     runs-on: ubuntu-latest
     needs: pre-deployment-checks
-    
+
     services:
       mysql:
         image: mysql:8.0
@@ -212,7 +210,7 @@ jobs:
     name: Build & Push Docker Image - PRODUCTION
     runs-on: ubuntu-latest
     needs: build-test-sonar
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -292,10 +290,11 @@ jobs:
 
       - name: 🔄 Update deployment configuration
         run: |
+          STRATEGY=${{ github.event.inputs.deployment-strategy }}
           sed -i 's|IMAGE_TAG|${{ needs.build-test-sonar.outputs.release-version }}|g' k8s/deployment.yaml
           sed -i 's|ENV_NAME|prod|g' k8s/deployment.yaml
           sed -i 's|app-replicas|3|g' k8s/deployment.yaml
-          sed -i 's|deployment-strategy|${{ github.event.inputs.deployment-strategy }}|g' k8s/deployment.yaml
+          sed -i "s|deployment-strategy|$STRATEGY|g" k8s/deployment.yaml
           
           echo "=== Production Deployment Configuration ==="
           cat k8s/deployment.yaml
@@ -464,5 +463,3 @@ jobs:
         run: |
           echo "❌ Production deployment failed"
           exit 1
-
-
