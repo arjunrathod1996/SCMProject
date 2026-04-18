@@ -237,7 +237,7 @@ kubectl rollout undo deployment/scm-app -n prod
 
 ### Manual Deployment
 ```bash
-# Dev deployment (manual ci.yml)
+# Dev deployment (manual ci.yml.backup)
 # GitHub Actions → CI Pipeline → Run workflow
 
 # Prod deployment (automatic on push or manual)
