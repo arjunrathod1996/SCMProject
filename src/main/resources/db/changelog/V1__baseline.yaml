@@ -1,7 +1,0 @@
-databaseChangeLog:
-  - changeSet:
-      id: baseline-1
-      author: arjun
-      changes:
-        - tagDatabase:
-            tag: baseline

@@ -5,31 +5,50 @@ metadata:
   labels:
     app: scm-app
 spec:
-  replicas: 1
+  # 1. HIGH AVAILABILITY: Run 3 instances of your app so if one crashes, the others take over.
+  replicas: 3
   selector:
     matchLabels:
       app: scm-app
+  
+  # 2. ZERO DOWNTIME DEPLOYMENTS: Ensures old pods aren't killed until new ones are ready
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+
   template:
     metadata:
       labels:
         app: scm-app
     spec:
+      # Optional but recommended for enterprise: spread pods across different physical nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - scm-app
+              topologyKey: kubernetes.io/hostname
+
       containers:
         - name: scm-app
-          image: arjun368/scm-app:latest
+          # NOTE: You should change 'latest' to a specific tag like 'v1.0.4' or a Git commit SHA in your CI/CD pipeline
+          image: arjunrathod1996/scmproject-githubactions:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 8080
+            - containerPort: 8081
+
+          # 3. SECURED ENVIRONMENT VARIABLES
           env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: default
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://mysql:3306/SEC
+              value: jdbc:mysql://mysql:3306/SCM
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -40,40 +59,37 @@ spec:
                 secretKeyRef:
                   name: scm-secrets
                   key: db-password
-            - name: SPRING_AI_OPENAI_API_KEY
+            - name: GROQ_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: scm-secrets
                   key: groq-api-key
+
+          # 4. RESOURCE LIMITS: Protects the Kubernetes cluster from memory leaks
           resources:
             requests:
-              cpu: "200m"
-              memory: "256Mi"
-            limits:
-              cpu: "500m"
+              cpu: "250m"
               memory: "512Mi"
-          startupProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8080
-            initialDelaySeconds: 0
-            periodSeconds: 5
-            timeoutSeconds: 5
-            failureThreshold: 30
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+
+          # 5. HEALTH CHECKS: Tells Kubernetes if the app is frozen or ready for traffic
           livenessProbe:
             httpGet:
-              path: /actuator/health/liveness
-              port: 8080
-            initialDelaySeconds: 180
+              path: /actuator/health/liveness # Ensure Spring Boot Actuator is enabled! Or change to a valid endpoint like '/'
+              port: 8081
+            initialDelaySeconds: 60 # Give Spring Boot time to start up
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
-
+          
           readinessProbe:
             httpGet:
-              path: /actuator/health/readiness
-              port: 8080
-            initialDelaySeconds: 120
-            periodSeconds: 5
+              path: /actuator/health/readiness # Ensure Actuator is enabled! Or change to '/'
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 10
             timeoutSeconds: 5
+            successThreshold: 1
             failureThreshold: 3
